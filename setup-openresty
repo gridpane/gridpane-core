@@ -746,7 +746,6 @@ if test ! -e "$PREFIX/bin/luarocks" ; then
   ln -s "${PREFIX}/luajit/bin/luarocks" "${PREFIX}/bin/luarocks"
 fi
 
-if test ${make_symlinks} -eq 1 ; then
   ln -s $PREFIX/luajit/bin/lua      /usr/local/bin/lua-openresty
   ln -s $PREFIX/luajit/bin/luac     /usr/local/bin/luac-openresty
   ln -s $PREFIX/luajit/bin/luajit   /usr/local/bin/luajit-openresty
@@ -756,7 +755,7 @@ if test ${make_symlinks} -eq 1 ; then
   ln -s $PREFIX/bin/restydoc-index  /usr/local/bin/restydoc-index
   ln -s $PREFIX/bin/openresty       /usr/local/bin/openresty
   ln -s $PREFIX/bin/opm             /usr/local/bin/opm
-fi
+
 
 if [ command -v update-alternatives 1>/dev/null 2>&1 ] ; then
   update-alternatives \
