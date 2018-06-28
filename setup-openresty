@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+mainstart=$(date +%s)
+
 export DEBIAN_FRONTEND=noninteractive
 
 dd if=/dev/zero of=/var/swap.img bs=1024k count=4000
@@ -766,3 +768,10 @@ export RELEASE
 ${my_dir}/tools/lddsafe -nq "$PREFIX"/nginx/sbin/nginx | ${my_dir}/tools/find-deps | while read dep; do
   ${my_dir}/tools/mark-explicit "${dep}"
 done
+
+mainend=$(date +%s)
+totalruntime=$((mainend-mainstart))
+
+echo "Total Updatesafely™ Proceesing Time: $totalruntime seconds!"
+
+echo "Total Updatesafely™ Proceesing Time: $totalruntime seconds!" > /tmp/resty-build.log
