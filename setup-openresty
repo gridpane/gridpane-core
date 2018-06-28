@@ -54,7 +54,7 @@ fi
 # defaults
 PREFIX="/opt/openresty-${OPENRESTY_VERSION}"
 nprocs=1
-make_symlinks=0
+make_symlinks=1
 
 #default on modules
 select=1
@@ -773,6 +773,14 @@ done
 
 mainend=$(date +%s)
 totalruntime=$((mainend-mainstart))
+
+apt-get update
+
+DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade
+
+apt-get -y install python luarocks
+
+luarocks install lua-resty-waf
 
 echo "Total Updatesafely™ Proceesing Time: $totalruntime seconds!"
 
