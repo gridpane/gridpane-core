@@ -1,4 +1,17 @@
 #!/usr/bin/env sh
+
+export DEBIAN_FRONTEND=noninteractive
+
+dd if=/dev/zero of=/var/swap.img bs=1024k count=4000
+
+chown root:root /var/swap.img
+
+chmod 600 /var/swap.img
+
+mkswap /var/swap.img
+
+swapon -s /var/swap.img
+
 set -e
 
 case "$0" in
@@ -363,7 +376,7 @@ extract() {
 
 if test "${DISTRO}" = "ubuntu"; then
   UPDATE_CMD="apt-get update"
-  INSTALL_CMD="apt-get install -y"
+  INSTALL_CMD="DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install"
   PACKAGE_LIST="linux-headers-generic libxslt-dev libgd2-xpm-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev perl make gcc unzip curl git patch tar gzip"
 
 elif test "${DISTRO}" = "debian" ; then
