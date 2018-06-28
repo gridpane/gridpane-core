@@ -746,6 +746,10 @@ if test ! -e "$PREFIX/bin/luarocks" ; then
   ln -s "${PREFIX}/luajit/bin/luarocks" "${PREFIX}/bin/luarocks"
 fi
 
+  mkdir -p /usr/local/openresty/site/lualib
+  
+  mkdir -p /usr/local/openresty/bin/opm
+  
   ln -s $PREFIX/luajit/bin/lua      /usr/local/bin/lua-openresty
   ln -s $PREFIX/luajit/bin/luac     /usr/local/bin/luac-openresty
   ln -s $PREFIX/luajit/bin/luajit   /usr/local/bin/luajit-openresty
