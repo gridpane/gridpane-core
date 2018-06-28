@@ -755,7 +755,20 @@ fi
   ln -s $PREFIX/bin/restydoc-index  /usr/local/bin/restydoc-index
   ln -s $PREFIX/bin/openresty       /usr/local/bin/openresty
   ln -s $PREFIX/bin/opm             /usr/local/bin/opm
-
+  
+  ln -s $PREFIX/luajit/bin/lua      /usr/local/openresty/lua-openresty
+  ln -s $PREFIX/luajit/bin/luac     /usr/local/openresty/luac-openresty
+  ln -s $PREFIX/luajit/bin/luajit   /usr/local/openresty/luajit-openresty
+  ln -s $PREFIX/bin/luarocks        /usr/local/openresty/luarocks-openresty
+  ln -s $PREFIX/bin/resty           /usr/local/openresty/resty
+  ln -s $PREFIX/bin/restydoc        /usr/local/openresty/restydoc
+  ln -s $PREFIX/bin/restydoc-index  /usr/local/openresty/restydoc-index
+  ln -s $PREFIX/bin/openresty       /usr/local/openresty/openresty
+  ln -s $PREFIX/bin/opm             /usr/local/openresty/opm
+  ln -s $PREFIX/bin                 /usr/local/openresty/bin
+  ln -s $PREFIX/site/lualib         /usr/local/openresty/site/lualib
+  ln -s $PREFIX/site                /usr/local/openresty/site
+  
 
 if [ command -v update-alternatives 1>/dev/null 2>&1 ] ; then
   update-alternatives \
