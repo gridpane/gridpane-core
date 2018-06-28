@@ -422,7 +422,9 @@ printf "Installing packages: ${PACKAGE_LIST}\n" | tee -a $PACKAGE_LOGFILE
 if test -n "${UPDATE_CMD}" ; then
   ${UPDATE_CMD} 2>&1 | tee -a $PACKAGE_LOGFILE
 fi
-${INSTALL_CMD} ${PACKAGE_LIST} 2>&1 | tee -a $PACKAGE_LOGFILE
+#${INSTALL_CMD} ${PACKAGE_LIST} 2>&1 | tee -a $PACKAGE_LOGFILE
+
+DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install linux-headers-generic libxslt-dev libgd2-xpm-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev perl make gcc unzip curl git patch tar gzip
 
 if ! test -d "/src" ; then
   mkdir "/src"
