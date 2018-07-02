@@ -4,6 +4,9 @@ mainstart=$(date +%s)
 
 export DEBIAN_FRONTEND=noninteractive
 
+sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+sudo add-apt-repository 'deb [arch=amd64,i386] http://mirrors.accretive-networks.net/mariadb/repo/10.2/ubuntu xenial main'
+
 dd if=/dev/zero of=/var/swap.img bs=1024k count=4000
 
 chown root:root /var/swap.img
