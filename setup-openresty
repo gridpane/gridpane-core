@@ -801,7 +801,11 @@ apt-add-repository ppa:nginx/development -y
 apt-add-repository ppa:chris-lea/redis-server -y
 apt-add-repository ppa:ondrej/apache2 -y
 
-LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php -y
+sudo apt-get install -y language-pack-en-base
+
+export LANG=C.UTF-8
+
+RUN DEBIAN_FRONTEND=noninteractive LC_ALL=en_US.UTF-8 add-apt-repository -y ppa:ondrej/php
 
 # Setup MariaDB Repositories
 
