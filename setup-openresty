@@ -4,6 +4,8 @@ mainstart=$(date +%s)
 
 export DEBIAN_FRONTEND=noninteractive
 
+echo $PATH > /tmp/temp.path
+
 sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
 sudo add-apt-repository 'deb [arch=amd64,i386] http://mirrors.accretive-networks.net/mariadb/repo/10.2/ubuntu xenial main'
 
@@ -774,7 +776,7 @@ fi
   ln -s $PREFIX/bin/opm             /usr/local/openresty/opm
   ln -s $PREFIX/site/lualib         /usr/local/openresty/site/lualib
   
-  
+PATH=/usr/local/sbin:/usr/local/bin:/usr/local/openresty:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:$PATH
   
 
 if [ command -v update-alternatives 1>/dev/null 2>&1 ] ; then
@@ -790,16 +792,87 @@ ${my_dir}/tools/lddsafe -nq "$PREFIX"/nginx/sbin/nginx | ${my_dir}/tools/find-de
   ${my_dir}/tools/mark-explicit "${dep}"
 done
 
-mainend=$(date +%s)
-totalruntime=$((mainend-mainstart))
+# Add A Few PPAs To Stay Current
+
+apt-get install -y --force-yes software-properties-common
+
+# apt-add-repository ppa:fkrull/deadsnakes-python2.7 -y
+apt-add-repository ppa:nginx/development -y
+apt-add-repository ppa:chris-lea/redis-server -y
+apt-add-repository ppa:ondrej/apache2 -y
+
+	apt-add-repository ppa:ondrej/php -y
+
+# Setup MariaDB Repositories
+
+sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+sudo add-apt-repository 'deb [arch=amd64,i386] http://mirrors.accretive-networks.net/mariadb/repo/10.2/ubuntu xenial main'
+
+# Update Package Lists
+
+apt-get update
+# Base Packages
+
+apt-get install -y --force-yes build-essential curl fail2ban gcc git libmcrypt4 libpcre3-dev \
+make python2.7 python-pip sendmail supervisor ufw unattended-upgrades unzip whois zsh > /tmp/basicsinstall.log
+
+# Install Python Httpie
+
+pip install httpie
+
+apt-get install -y --force-yes php7.2-cli php7.2-dev \
+php7.2-pgsql php7.2-sqlite3 php7.2-gd \
+php7.2-curl php7.2-memcached \
+php7.2-imap php7.2-mysql php7.2-mbstring \
+php7.2-xml php7.2-zip php7.2-bcmath php7.2-soap \
+php7.2-intl php7.2-readline > /tmp/phpinstall.log
+
+sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
 
 apt-get update
 
 DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade
 
+AUTOGENPASS_ROOT=$(openssl rand -hex 12)
+
+debconf-set-selections <<< "mariadb-server-10.2 mysql-server/data-dir select ''"
+debconf-set-selections <<< "mariadb-server-10.2 mysql-server/root_password password $AUTOGENPASS_ROOT"
+debconf-set-selections <<< "mariadb-server-10.2 mysql-server/root_password_again password $AUTOGENPASS_ROOT"
+
+# Install MySQL
+
+apt-get install -y mariadb-server-10.2 > /tmp/mysqlinstall.log
+
+enc_pass_root=$( echo $AUTOGENPASS_ROOT | openssl enc -a -salt )
+
+# Configure Access Permissions For Root & GridPane Users
+
+sed -i '/^bind-address/s/bind-address.*=.*/bind-address = */' /etc/mysql/my.cnf
+mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "GRANT ALL ON *.* TO root@'"$serverIP"' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0';"
+mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "GRANT ALL ON *.* TO root@'%' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0';"
+service mysql restart
+
+mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "CREATE USER 'gridpane'@'"$serverIP"' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0';"
+mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "GRANT ALL ON *.* TO 'gridpane'@'"$serverIP"' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0' WITH GRANT OPTION;"
+mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "GRANT ALL ON *.* TO 'gridpane'@'%' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0' WITH GRANT OPTION;"
+mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "FLUSH PRIVILEGES;"
+
+# Set Character Set
+
+echo "" >> /etc/mysql/my.cnf
+echo "[mysqld]" >> /etc/mysql/my.cnf
+echo "character-set-server = utf8" >> /etc/mysql/my.cnf
+
+# Create The Initial Database If Specified
+
+mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "CREATE DATABASE gridpane;"
+
 apt-get -y install python luarocks
 
 luarocks install lua-resty-waf
+
+mainend=$(date +%s)
+totalruntime=$((mainend-mainstart))
 
 echo "Total Updatesafely™ Proceesing Time: $totalruntime seconds!"
 
