@@ -796,15 +796,14 @@ done
 
 apt-get install -y --force-yes software-properties-common
 
-# apt-add-repository ppa:fkrull/deadsnakes-python2.7 -y
-apt-add-repository ppa:nginx/development -y
-apt-add-repository ppa:chris-lea/redis-server -y
-apt-add-repository ppa:ondrej/apache2 -y
-
 sudo apt-get install -y language-pack-en-base
 
 export LANG=C.UTF-8
 
+# apt-add-repository ppa:fkrull/deadsnakes-python2.7 -y
+apt-add-repository ppa:nginx/development -y
+apt-add-repository ppa:chris-lea/redis-server -y
+RUN DEBIAN_FRONTEND=noninteractive LC_ALL=en_US.UTF-8  apt-add-repository ppa:ondrej/apache2 -y
 RUN DEBIAN_FRONTEND=noninteractive LC_ALL=en_US.UTF-8 add-apt-repository -y ppa:ondrej/php
 
 # Setup MariaDB Repositories
