@@ -1,215 +1,409 @@
-#!/usr/bin/env sh
+#!/bin/bash
 
 mainstart=$(date +%s)
 
-export DEBIAN_FRONTEND=noninteractive
+sudo sed -i "s/#precedence ::ffff:0:0\/96  100/precedence ::ffff:0:0\/96  100/" /etc/gai.conf
 
-echo $PATH > /tmp/temp.path
-
-#sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
-#sudo add-apt-repository 'deb [arch=amd64,i386] http://mirrors.accretive-networks.net/mariadb/repo/10.2/ubuntu xenial main'
-
-dd if=/dev/zero of=/var/swap.img bs=1024k count=4000
-
-chown root:root /var/swap.img
-
-chmod 600 /var/swap.img
-
-mkswap /var/swap.img
-
-swapon -s /var/swap.img
-
-#curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
-#| sudo bash -s -- --mariadb-server-version=10.2 --skip-maxscale -y | sudo tee -a /tmp/ubuntu-nginx-web-server
-#sudo apt update
-
-#ROOT_SQL_PASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1; echo;)
-
-#sudo debconf-set-selections <<< 'mariadb-server mysql-server/root_password password $ROOT_SQL_PASS'
-#sudo debconf-set-selections <<< 'mariadb-server mysql-server/root_password_again password $ROOT_SQL_PASS'
-
-#sudo apt-get install -y mariadb-server
-
-#cat <<EOF >~/.my.cnf
-#[client]
-#user=root
-#password=$ROOT_SQL_PASS
-#EOF
-
-#cp ~/.my.cnf /etc/mysql/conf.d/my.cnf
-
-### THIS WORKED BEFORE
-#sudo bash -c 'echo -e "[user]\n\tname = GridPane\n\temail = accounts@gridpane.com" > ~/.gitconfig'
-
-#wget -qO ee rt.cx/ee && sudo bash ee
-#ee stack install 
-#ee stack install --php7 --redis --admin --phpredisadmin 
-### THIS WORKED BEFORE
+# Upgrade The Base Packages
 
 export DEBIAN_FRONTEND=noninteractive
 
-export MDBPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
+apt-get update
+apt-get upgrade -y
 
-echo "mariadb-server-10.3 mysql-server/root_password password $MDBPASS" | debconf-set-selections
-echo "mariadb-server-10.3 mysql-server/root_password_again password $MDBPASS" | debconf-set-selections
-
-# Using the commands below, MariaDB repository is setup.
-sudo apt-get -y install software-properties-common
-sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
-sudo add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://nyc2.mirrors.digitalocean.com/mariadb/repo/10.3/ubuntu xenial main'
-
-# Install mariadb-server using apt.
-sudo apt update
-sudo apt -y install mariadb-server
-
-echo "$MDBPASS" >> /root/mysql.txt
-
-echo "We got to here 1!"
-
-cat <<EOF >~/.my.cnf
- [client]
- user= root
- password= $ROOT_SQL_PASS
-EOF
-
-wget -O /etc/mysql/my.cnf https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/mysql/my.cnf
-
-sudo service mysql stop
-
-mv /var/lib/mysql/ib_logfile0 /var/lib/mysql/ib_logfile0.bak
-mv /var/lib/mysql/ib_logfile1 /var/lib/mysql/ib_logfile1.bak
-
-sudo service mysql start
-
-cp ~/.my.cnf /etc/mysql/conf.d/my.cnf
-
-bash -c 'echo -e "[user]\n\tname = GridPane\n\temail = accounts@gridpane.com" > ~/.gitconfig'
-wget -qO ee rt.cx/ee && sudo bash ee
-
-source /etc/bash_completion.d/ee_auto.rc
-
-ee stack install
-ee stack install --php7 --redis --admin --phpredisadmin
-
-cd ~/ ||exit
-curl -sS https://getcomposer.org/installer | php
-mv composer.phar /usr/bin/composer
-sudo -u www-data composer update -d /var/www/22222/htdocs/db/pma/
-
-sudo wp --allow-root cli update --nightly
-
-usermod -s /bin/bash www-data
-
-apt update && apt install php7.1-fpm php7.1-cli php7.1-zip php7.1-opcache php7.1-mysql php7.1-mcrypt php7.1-mbstring php7.1-json php7.1-intl \
-php7.1-gd php7.1-curl php7.1-bz2 php7.1-xml php7.1-tidy php7.1-soap php7.1-bcmath -y php7.1-xsl
-
-wget -O /etc/php/7.1/fpm/pool.d/www.conf https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/php/7.1/fpm/pool.d/www.conf
-
-wget -O /etc/php/7.1/fpm/php.ini https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/php/7.1/fpm/php.ini
-service php7.1-fpm restart
-
-#apt update && apt install php7.2-fpm php7.2-xml php7.2-bz2  php7.2-zip php7.2-mysql  php7.2-intl php7.2-gd php7.2-curl php7.2-soap php7.2-mbstring -y
-
-#wget -O /etc/php/7.2/fpm/pool.d/www.conf https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/php/7.2/fpm/pool.d/www.conf
-#service php7.2-fpm restart
-
-wget -O /etc/nginx/conf.d/upstream.conf https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/nginx/conf.d/upstream.conf
-service nginx reload
-
-cd /etc/nginx/common || exit
-wget https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/common.zip
-unzip common.zip
-
-wget -O /etc/php/7.0/cli/php.ini https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/php/7.0/cli/php.ini 
-wget -O /etc/php/7.0/fpm/php.ini https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/php/7.0/fpm/php.ini 
-
-wget -O /etc/fail2ban/filter.d/ddos.conf https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/fail2ban/filter.d/ddos.conf 
-wget -O /etc/fail2ban/filter.d/ee-wordpress.conf https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/fail2ban/filter.d/ee-wordpress.conf 
-wget -O /etc/fail2ban/jail.d/custom.conf https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/fail2ban/jail.d/custom.conf 
-wget -O  /etc/fail2ban/jail.d/ddos.conf https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/fail2ban/jail.d/ddos.conf 
-
-fail2ban-client reload 
 # Add A Few PPAs To Stay Current
 
-#apt-get install -y --force-yes software-properties-common
-
-#sudo apt-get install -y language-pack-en-base
-
-#export LANG=C.UTF-8
+apt-get install -y --force-yes software-properties-common
 
 # apt-add-repository ppa:fkrull/deadsnakes-python2.7 -y
-#apt-add-repository ppa:nginx/development -y
-#apt-add-repository ppa:chris-lea/redis-server -y
-#RUN DEBIAN_FRONTEND=noninteractive LC_ALL=en_US.UTF-8  apt-add-repository ppa:ondrej/apache2 -y
-#RUN DEBIAN_FRONTEND=noninteractive LC_ALL=en_US.UTF-8 add-apt-repository -y ppa:ondrej/php
+apt-add-repository ppa:nginx/development -y
+apt-add-repository ppa:chris-lea/redis-server -y
+apt-add-repository ppa:ondrej/apache2 -y
+
+	apt-add-repository ppa:ondrej/php -y
+
+# Setup MySQL 5.7 Repositories
+
 
 # Setup MariaDB Repositories
 
-#sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
-#sudo add-apt-repository 'deb [arch=amd64,i386] http://mirrors.accretive-networks.net/mariadb/repo/10.2/ubuntu xenial main'
+    sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+    sudo add-apt-repository 'deb [arch=amd64,i386] http://mirrors.accretive-networks.net/mariadb/repo/10.2/ubuntu xenial main'
+
 
 # Update Package Lists
 
-#apt-get update
+apt-get update
 # Base Packages
 
-#apt-get install -y --force-yes build-essential curl fail2ban gcc git libmcrypt4 libpcre3-dev \
-#make python2.7 python-pip sendmail supervisor ufw unattended-upgrades unzip whois zsh > /tmp/basicsinstall.log
+apt-get install -y --force-yes build-essential curl fail2ban gcc git libmcrypt4 libpcre3-dev \
+make python2.7 python-pip sendmail supervisor ufw unattended-upgrades unzip whois zsh
 
 # Install Python Httpie
 
-#pip install httpie
+pip install httpie
 
-#apt-get install -y --force-yes php7.2-cli php7.2-dev \
-#php7.2-pgsql php7.2-sqlite3 php7.2-gd \
-#php7.2-curl php7.2-memcached \
-#php7.2-imap php7.2-mysql php7.2-mbstring \
-#php7.2-xml php7.2-zip php7.2-bcmath php7.2-soap \
-#php7.2-intl php7.2-readline > /tmp/phpinstall.log
+# Disable Password Authentication Over SSH
 
-#sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+sed -i "/PasswordAuthentication yes/d" /etc/ssh/sshd_config
+echo "" | sudo tee -a /etc/ssh/sshd_config
+echo "" | sudo tee -a /etc/ssh/sshd_config
+echo "PasswordAuthentication no" | sudo tee -a /etc/ssh/sshd_config
 
-#apt-get update
+# Restart SSH
 
-#DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade
+ssh-keygen -A
+service ssh restart
 
-#AUTOGENPASS_ROOT=$(openssl rand -hex 12)
+# Set The Hostname If Necessary
 
-#debconf-set-selections <<< "mariadb-server-10.2 mysql-server/data-dir select ''"
-#debconf-set-selections <<< "mariadb-server-10.2 mysql-server/root_password password $AUTOGENPASS_ROOT"
-#debconf-set-selections <<< "mariadb-server-10.2 mysql-server/root_password_again password $AUTOGENPASS_ROOT"
+
+echo "beautiful-breeze" > /etc/hostname
+sed -i 's/127\.0\.0\.1.*localhost/127.0.0.1	beautiful-breeze.localdomain beautiful-breeze localhost/' /etc/hosts
+hostname beautiful-breeze
+
+
+# Set The Timezone
+
+# ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+
+# Create The Root SSH Directory If Necessary
+
+if [ ! -d /root/.ssh ]
+then
+	mkdir -p /root/.ssh
+	touch /root/.ssh/authorized_keys
+fi
+
+# Setup Forge User
+
+useradd forge
+mkdir -p /home/forge/.ssh
+mkdir -p /home/forge/.forge
+adduser forge sudo
+
+# Setup Bash For Forge User
+
+chsh -s /bin/bash forge
+cp /root/.profile /home/forge/.profile
+cp /root/.bashrc /home/forge/.bashrc
+
+# Set The Sudo Password For Forge
+
+PASSWORD=$(mkpasswd HtDMwFH3WzolgpNQEL0t)
+usermod --password $PASSWORD forge
+
+# Build Formatted Keys & Copy Keys To Forge
+
+
+cat > /root/.ssh/authorized_keys << EOF
+# Laravel Forge
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD1qfr1hmTf0H/3IxrgoZW2nizmnNbvwRNJbNOwmUm6JX9Xqo2TtPxnAu+aEOnzo9AljIMMLullKQTFHg+pW1rP+HBwXyI2P5pEWvuh+GcTQcZplZ+BmWMrgjBV3915Bl8EsfCVb5YEevTG6uqRS7XtL10JUtMaBBZaEilZNmGwA7Z9nMdPK3FqUQv+uh6L8mOJ034
+FJTTbPSauf9xtAihhFPIrSJcihvAPtvZfCsAV8ouZwKks3LqSdYrQAZQM0VeNl4Oge8JFNTzeUZaGFLhFnw70ws2kL9U0eKm+zyQmIZ74cijRyJB+0L0UlIJd3TbsXhlE6sh/ZM255F/UdU7L worker@forge.laravel.com
+
+
+EOF
+
+
+cp /root/.ssh/authorized_keys /home/forge/.ssh/authorized_keys
+
+# Create The Server SSH Key
+
+ssh-keygen -f /home/forge/.ssh/id_rsa -t rsa -N ''
+
+# Copy Source Control Public Keys Into Known Hosts File
+
+ssh-keyscan -H github.com >> /home/forge/.ssh/known_hosts
+ssh-keyscan -H bitbucket.org >> /home/forge/.ssh/known_hosts
+ssh-keyscan -H gitlab.com >> /home/forge/.ssh/known_hosts
+
+# Configure Git Settings
+
+git config --global user.name "Patrick Gallagher"
+git config --global user.email "accounts@overtlypress.com"
+
+# Add The Reconnect Script Into Forge Directory
+
+cat > /home/forge/.forge/reconnect << EOF
+#!/usr/bin/env bash
+
+echo "# Laravel Forge" | tee -a /home/forge/.ssh/authorized_keys > /dev/null
+echo \$1 | tee -a /home/forge/.ssh/authorized_keys > /dev/null
+
+echo "# Laravel Forge" | tee -a /root/.ssh/authorized_keys > /dev/null
+echo \$1 | tee -a /root/.ssh/authorized_keys > /dev/null
+
+echo "Keys Added!"
+EOF
+
+# Setup Forge Home Directory Permissions
+
+chown -R forge:forge /home/forge
+chmod -R 755 /home/forge
+chmod 700 /home/forge/.ssh/id_rsa
+
+# Setup UFW Firewall
+
+ufw allow 22
+ufw allow 80
+ufw allow 443
+ufw --force enable
+
+# Allow FPM Restart
+
+echo "forge ALL=NOPASSWD: /usr/sbin/service php7.2-fpm reload" > /etc/sudoers.d/php-fpm
+echo "forge ALL=NOPASSWD: /usr/sbin/service php7.1-fpm reload" >> /etc/sudoers.d/php-fpm
+echo "forge ALL=NOPASSWD: /usr/sbin/service php7.0-fpm reload" >> /etc/sudoers.d/php-fpm
+echo "forge ALL=NOPASSWD: /usr/sbin/service php5.6-fpm reload" >> /etc/sudoers.d/php-fpm
+echo "forge ALL=NOPASSWD: /usr/sbin/service php5-fpm reload" >> /etc/sudoers.d/php-fpm
+
+	# Install Base PHP Packages
+
+
+apt-get install -y --force-yes php7.2-cli php7.2-dev \
+php7.2-pgsql php7.2-sqlite3 php7.2-gd \
+php7.2-curl php7.2-memcached \
+php7.2-imap php7.2-mysql php7.2-mbstring \
+php7.2-xml php7.2-zip php7.2-bcmath php7.2-soap \
+php7.2-intl php7.2-readline
+
+
+# Install Composer Package Manager
+
+curl -sS https://getcomposer.org/installer | php
+mv composer.phar /usr/local/bin/composer
+
+# Misc. PHP CLI Configuration
+
+sudo sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php/7.2/cli/php.ini
+sudo sed -i "s/display_errors = .*/display_errors = On/" /etc/php/7.2/cli/php.ini
+sudo sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php/7.2/cli/php.ini
+sudo sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php/7.2/cli/php.ini
+
+# Configure Sessions Directory Permissions
+
+chmod 733 /var/lib/php/sessions
+chmod +t /var/lib/php/sessions
+
+
+	#
+# REQUIRES:
+#       - server (the forge server instance)
+#		- site_name (the name of the site folder)
+#
+
+# Install Nginx & PHP-FPM
+
+	apt-get install -y --force-yes nginx php7.2-fpm
+
+systemctl enable nginx.service
+
+# Generate dhparam File
+
+openssl dhparam -out /etc/nginx/dhparams.pem 2048
+
+# Tweak Some PHP-FPM Settings
+
+sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php/7.2/fpm/php.ini
+sed -i "s/display_errors = .*/display_errors = On/" /etc/php/7.2/fpm/php.ini
+sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php/7.2/fpm/php.ini
+sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php/7.2/fpm/php.ini
+sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php/7.2/fpm/php.ini
+
+# Configure FPM Pool Settings
+
+sed -i "s/^user = www-data/user = forge/" /etc/php/7.2/fpm/pool.d/www.conf
+sed -i "s/^group = www-data/group = forge/" /etc/php/7.2/fpm/pool.d/www.conf
+sed -i "s/;listen\.owner.*/listen.owner = forge/" /etc/php/7.2/fpm/pool.d/www.conf
+sed -i "s/;listen\.group.*/listen.group = forge/" /etc/php/7.2/fpm/pool.d/www.conf
+sed -i "s/;listen\.mode.*/listen.mode = 0666/" /etc/php/7.2/fpm/pool.d/www.conf
+sed -i "s/;request_terminate_timeout.*/request_terminate_timeout = 60/" /etc/php/7.2/fpm/pool.d/www.conf
+
+# Configure Primary Nginx Settings
+
+sed -i "s/user www-data;/user forge;/" /etc/nginx/nginx.conf
+sed -i "s/worker_processes.*/worker_processes auto;/" /etc/nginx/nginx.conf
+sed -i "s/# multi_accept.*/multi_accept on;/" /etc/nginx/nginx.conf
+sed -i "s/# server_names_hash_bucket_size.*/server_names_hash_bucket_size 128;/" /etc/nginx/nginx.conf
+
+# Configure Gzip
+
+cat > /etc/nginx/conf.d/gzip.conf << EOF
+gzip_comp_level 5;
+gzip_min_length 256;
+gzip_proxied any;
+gzip_vary on;
+
+gzip_types
+application/atom+xml
+application/javascript
+application/json
+application/rss+xml
+application/vnd.ms-fontobject
+application/x-font-ttf
+application/x-web-app-manifest+json
+application/xhtml+xml
+application/xml
+font/opentype
+image/svg+xml
+image/x-icon
+text/css
+text/plain
+text/x-component;
+
+EOF
+
+# Disable The Default Nginx Site
+
+rm /etc/nginx/sites-enabled/default
+rm /etc/nginx/sites-available/default
+service nginx restart
+
+# Install A Catch All Server
+
+cat > /etc/nginx/sites-available/catch-all << EOF
+server {
+    return 404;
+}
+EOF
+
+ln -s /etc/nginx/sites-available/catch-all /etc/nginx/sites-enabled/catch-all
+
+# Restart Nginx & PHP-FPM Services
+
+# Restart Nginx & PHP-FPM Services
+
+service nginx restart
+service nginx reload
+
+if [ ! -z "\$(ps aux | grep php-fpm | grep -v grep)" ]
+then
+    service php7.2-fpm restart > /dev/null 2>&1
+    service php7.1-fpm restart > /dev/null 2>&1
+    service php7.0-fpm restart > /dev/null 2>&1
+    service php5.6-fpm restart > /dev/null 2>&1
+    service php5-fpm restart > /dev/null 2>&1
+fi
+
+# Add Forge User To www-data Group
+
+usermod -a -G www-data forge
+id forge
+groups forge
+
+
+curl --silent --location https://deb.nodesource.com/setup_8.x | bash -
+
+apt-get update
+
+sudo apt-get install -y --force-yes nodejs
+
+npm install -g pm2
+npm install -g gulp
+npm install -g yarn
+
+    #
+# REQUIRES:
+#       - server (the forge server instance)
+#       - db_password (random password for mysql user)
+#
+
+# Set The Automated Root Password
+
+export DEBIAN_FRONTEND=noninteractive
+
+debconf-set-selections <<< "mariadb-server-10.2 mysql-server/data-dir select ''"
+debconf-set-selections <<< "mariadb-server-10.2 mysql-server/root_password password QEKcD3uHBb3dxOaTP5J0"
+debconf-set-selections <<< "mariadb-server-10.2 mysql-server/root_password_again password QEKcD3uHBb3dxOaTP5J0"
 
 # Install MySQL
 
-#apt-get install -y mariadb-server-10.2 > /tmp/mysqlinstall.log
+apt-get install -y mariadb-server-10.2
 
-#enc_pass_root=$( echo $AUTOGENPASS_ROOT | openssl enc -a -salt )
+# Configure Password Expiration
 
-# Configure Access Permissions For Root & GridPane Users
+# echo "default_password_lifetime = 0" >> /etc/mysql/my.cnf
 
-#sed -i '/^bind-address/s/bind-address.*=.*/bind-address = */' /etc/mysql/my.cnf
-#mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "GRANT ALL ON *.* TO root@'"$serverIP"' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0';"
-#mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "GRANT ALL ON *.* TO root@'%' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0';"
-#service mysql restart
+# Configure Access Permissions For Root & Forge Users
 
-#mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "CREATE USER 'gridpane'@'"$serverIP"' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0';"
-#mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "GRANT ALL ON *.* TO 'gridpane'@'"$serverIP"' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0' WITH GRANT OPTION;"
-#mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "GRANT ALL ON *.* TO 'gridpane'@'%' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0' WITH GRANT OPTION;"
-#mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "FLUSH PRIVILEGES;"
+sed -i '/^bind-address/s/bind-address.*=.*/bind-address = */' /etc/mysql/my.cnf
+mysql --user="root" --password="QEKcD3uHBb3dxOaTP5J0" -e "GRANT ALL ON *.* TO root@'1.2.3.4' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0';"
+mysql --user="root" --password="QEKcD3uHBb3dxOaTP5J0" -e "GRANT ALL ON *.* TO root@'%' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0';"
+service mysql restart
+
+mysql --user="root" --password="QEKcD3uHBb3dxOaTP5J0" -e "CREATE USER 'forge'@'1.2.3.4' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0';"
+mysql --user="root" --password="QEKcD3uHBb3dxOaTP5J0" -e "GRANT ALL ON *.* TO 'forge'@'1.2.3.4' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0' WITH GRANT OPTION;"
+mysql --user="root" --password="QEKcD3uHBb3dxOaTP5J0" -e "GRANT ALL ON *.* TO 'forge'@'%' IDENTIFIED BY 'QEKcD3uHBb3dxOaTP5J0' WITH GRANT OPTION;"
+mysql --user="root" --password="QEKcD3uHBb3dxOaTP5J0" -e "FLUSH PRIVILEGES;"
 
 # Set Character Set
 
-#echo "" >> /etc/mysql/my.cnf
-#echo "[mysqld]" >> /etc/mysql/my.cnf
-#echo "character-set-server = utf8" >> /etc/mysql/my.cnf
+echo "" >> /etc/mysql/my.cnf
+echo "[mysqld]" >> /etc/mysql/my.cnf
+echo "character-set-server = utf8" >> /etc/mysql/my.cnf
 
 # Create The Initial Database If Specified
 
-#mysql --user="root" --password="$AUTOGENPASS_ROOT" -e "CREATE DATABASE gridpane;"
+mysql --user="root" --password="QEKcD3uHBb3dxOaTP5J0" -e "CREATE DATABASE forge;"
 
-#apt-get -y install python luarocks
 
-#luarocks install lua-resty-waf
+# Install & Configure Redis Server
+
+apt-get install -y redis-server
+sed -i 's/bind 127.0.0.1/bind 0.0.0.0/' /etc/redis/redis.conf
+service redis-server restart
+# Install & Configure Memcached
+
+apt-get install -y memcached
+sed -i 's/-l 127.0.0.1/-l 0.0.0.0/' /etc/memcached.conf
+service memcached restart
+# Install & Configure Beanstalk
+
+apt-get install -y --force-yes beanstalkd
+sed -i "s/BEANSTALKD_LISTEN_ADDR.*/BEANSTALKD_LISTEN_ADDR=0.0.0.0/" /etc/default/beanstalkd
+sed -i "s/#START=yes/START=yes/" /etc/default/beanstalkd
+
+service beanstalkd start
+sleep 5
+service beanstalkd restart
+
+# Configure Supervisor Autostart
+
+systemctl enable supervisor.service
+service supervisor start
+
+# Configure Swap Disk
+
+if [ -f /swapfile ]; then
+    echo "Swap exists."
+else
+    fallocate -l 1G /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo "/swapfile none swap sw 0 0" >> /etc/fstab
+    echo "vm.swappiness=30" >> /etc/sysctl.conf
+    echo "vm.vfs_cache_pressure=50" >> /etc/sysctl.conf
+fi
+
+# Setup Unattended Security Upgrades
+
+cat > /etc/apt/apt.conf.d/50unattended-upgrades << EOF
+Unattended-Upgrade::Allowed-Origins {
+    "Ubuntu bionic-security";
+};
+Unattended-Upgrade::Package-Blacklist {
+    //
+};
+EOF
+
+cat > /etc/apt/apt.conf.d/10periodic << EOF
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Download-Upgradeable-Packages "1";
+APT::Periodic::AutocleanInterval "7";
+APT::Periodic::Unattended-Upgrade "1";
+EOF
 
 mainend=$(date +%s)
 totalruntime=$((mainend-mainstart))
