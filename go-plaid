@@ -48,7 +48,7 @@ swapon -s /var/swap.img
 
 export DEBIAN_FRONTEND=noninteractive
 
-export MDBPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev
+export MDBPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
 
 echo "mariadb-server-10.3 mysql-server/root_password password $MDBPASS" | debconf-set-selections
 echo "mariadb-server-10.3 mysql-server/root_password_again password $MDBPASS" | debconf-set-selections
