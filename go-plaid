@@ -48,17 +48,21 @@ swapon -s /var/swap.img
 
 export DEBIAN_FRONTEND=noninteractive
 
-curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
-| bash -s -- --mariadb-server-version=10.3 --skip-maxscale -y
-apt-get update -q
+export MDBPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev
 
-echo "Things are updated!"
+echo "mariadb-server-10.3 mysql-server/root_password password $MDBPASS" | debconf-set-selections
+echo "mariadb-server-10.3 mysql-server/root_password_again password $MDBPASS" | debconf-set-selections
 
-ROOT_SQL_PASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1; echo;)
+# Using the commands below, MariaDB repository is setup.
+sudo apt-get -y install software-properties-common
+sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+sudo add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://nyc2.mirrors.digitalocean.com/mariadb/repo/10.3/ubuntu xenial main'
 
-debconf-set-selections <<< 'mariadb-server-10.3 mysql-server/root_password password $ROOT_SQL_PASS'
-debconf-set-selections <<< 'mariadb-server-10.3 mysql-server/root_password_again password $ROOT_SQL_PASS'
-apt-get install -q -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" mariadb-server
+# Install mariadb-server using apt.
+sudo apt update
+sudo apt -y install mariadb-server
+
+echo "$MDBPASS" >> /root/mysql.txt
 
 echo "We got to here 1!"
 
