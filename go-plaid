@@ -28,7 +28,7 @@ apt-add-repository ppa:ondrej/apache2 -y
 # Setup MariaDB Repositories
 
     sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
-    sudo add-apt-repository 'deb [arch=amd64,i386] http://mirrors.accretive-networks.net/mariadb/repo/10.2/ubuntu xenial main'
+    sudo add-apt-repository 'deb [arch=amd64,i386] http://mirrors.accretive-networks.net/mariadb/repo/10.3/ubuntu xenial main'
 
 
 # Update Package Lists
@@ -78,45 +78,35 @@ fi
 
 # Setup Forge User
 
-useradd forge
-mkdir -p /home/forge/.ssh
-mkdir -p /home/forge/.forge
-adduser forge sudo
+#useradd forge
+#mkdir -p /home/forge/.ssh
+#mkdir -p /home/forge/.forge
+#adduser forge sudo
 
 # Setup Bash For Forge User
 
-chsh -s /bin/bash forge
-cp /root/.profile /home/forge/.profile
-cp /root/.bashrc /home/forge/.bashrc
+#chsh -s /bin/bash forge
+#cp /root/.profile /home/forge/.profile
+#cp /root/.bashrc /home/forge/.bashrc
 
 # Set The Sudo Password For Forge
 
-PASSWORD=$(mkpasswd HtDMwFH3WzolgpNQEL0t)
-usermod --password $PASSWORD forge
+#PASSWORD=$(mkpasswd HtDMwFH3WzolgpNQEL0t)
+#usermod --password $PASSWORD forge
 
 # Build Formatted Keys & Copy Keys To Forge
 
-
-cat > /root/.ssh/authorized_keys << EOF
-# Laravel Forge
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD1qfr1hmTf0H/3IxrgoZW2nizmnNbvwRNJbNOwmUm6JX9Xqo2TtPxnAu+aEOnzo9AljIMMLullKQTFHg+pW1rP+HBwXyI2P5pEWvuh+GcTQcZplZ+BmWMrgjBV3915Bl8EsfCVb5YEevTG6uqRS7XtL10JUtMaBBZaEilZNmGwA7Z9nMdPK3FqUQv+uh6L8mOJ034
-FJTTbPSauf9xtAihhFPIrSJcihvAPtvZfCsAV8ouZwKks3LqSdYrQAZQM0VeNl4Oge8JFNTzeUZaGFLhFnw70ws2kL9U0eKm+zyQmIZ74cijRyJB+0L0UlIJd3TbsXhlE6sh/ZM255F/UdU7L worker@forge.laravel.com
-
-
-EOF
-
-
-cp /root/.ssh/authorized_keys /home/forge/.ssh/authorized_keys
+#cp /root/.ssh/authorized_keys /home/forge/.ssh/authorized_keys
 
 # Create The Server SSH Key
 
-ssh-keygen -f /home/forge/.ssh/id_rsa -t rsa -N ''
+#ssh-keygen -f /home/forge/.ssh/id_rsa -t rsa -N ''
 
 # Copy Source Control Public Keys Into Known Hosts File
 
-ssh-keyscan -H github.com >> /home/forge/.ssh/known_hosts
-ssh-keyscan -H bitbucket.org >> /home/forge/.ssh/known_hosts
-ssh-keyscan -H gitlab.com >> /home/forge/.ssh/known_hosts
+#ssh-keyscan -H github.com >> /home/forge/.ssh/known_hosts
+#ssh-keyscan -H bitbucket.org >> /home/forge/.ssh/known_hosts
+#ssh-keyscan -H gitlab.com >> /home/forge/.ssh/known_hosts
 
 # Configure Git Settings
 
@@ -125,23 +115,7 @@ git config --global user.email "accounts@overtlypress.com"
 
 # Add The Reconnect Script Into Forge Directory
 
-cat > /home/forge/.forge/reconnect << EOF
-#!/usr/bin/env bash
-
-echo "# Laravel Forge" | tee -a /home/forge/.ssh/authorized_keys > /dev/null
-echo \$1 | tee -a /home/forge/.ssh/authorized_keys > /dev/null
-
-echo "# Laravel Forge" | tee -a /root/.ssh/authorized_keys > /dev/null
-echo \$1 | tee -a /root/.ssh/authorized_keys > /dev/null
-
-echo "Keys Added!"
-EOF
-
 # Setup Forge Home Directory Permissions
-
-chown -R forge:forge /home/forge
-chmod -R 755 /home/forge
-chmod 700 /home/forge/.ssh/id_rsa
 
 # Setup UFW Firewall
 
@@ -286,13 +260,6 @@ then
     service php5-fpm restart > /dev/null 2>&1
 fi
 
-# Add Forge User To www-data Group
-
-usermod -a -G www-data forge
-id forge
-groups forge
-
-
 curl --silent --location https://deb.nodesource.com/setup_8.x | bash -
 
 apt-get update
@@ -408,6 +375,6 @@ EOF
 mainend=$(date +%s)
 totalruntime=$((mainend-mainstart))
 
-echo "Total Updatesafely™ Proceesing Time: $totalruntime seconds!"
+echo "Total Provosioning Proceesing Time: $totalruntime seconds!"
 
-echo "Total Updatesafely™ Proceesing Time: $totalruntime seconds!" > /tmp/resty-build.log
+echo "Total Provosioning Proceesing Time: $totalruntime seconds!" > /tmp/resty-build.log
