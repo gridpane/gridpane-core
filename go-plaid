@@ -47,14 +47,14 @@ swapon -s /var/swap.img
 ### THIS WORKED BEFORE
 
 curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
-| sudo bash -s -- --mariadb-server-version=10.3 --skip-maxscale -y
-sudo apt-get update 
+| bash -s -- --mariadb-server-version=10.3 --skip-maxscale -y
+apt-get update 
 
 ROOT_SQL_PASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1; echo;)
 export DEBIAN_FRONTEND=noninteractive
-sudo debconf-set-selections <<< 'mariadb-server-10.3 mysql-server/root_password password $ROOT_SQL_PASS'
-sudo debconf-set-selections <<< 'mariadb-server-10.3 mysql-server/root_password_again password $ROOT_SQL_PASS'
-sudo apt-get install -y mariadb-server
+debconf-set-selections <<< 'mariadb-server-10.3 mysql-server/root_password password $ROOT_SQL_PASS'
+debconf-set-selections <<< 'mariadb-server-10.3 mysql-server/root_password_again password $ROOT_SQL_PASS'
+apt-get install -y mariadb-server
 
 cat <<EOF >~/.my.cnf
  [client]
@@ -66,15 +66,15 @@ wget -O /etc/mysql/my.cnf https://virtubox.github.io/ubuntu-nginx-web-server/fil
 
 sudo service mysql stop
 
-sudo mv /var/lib/mysql/ib_logfile0 /var/lib/mysql/ib_logfile0.bak
-sudo mv /var/lib/mysql/ib_logfile1 /var/lib/mysql/ib_logfile1.bak
+mv /var/lib/mysql/ib_logfile0 /var/lib/mysql/ib_logfile0.bak
+mv /var/lib/mysql/ib_logfile1 /var/lib/mysql/ib_logfile1.bak
 
 sudo service mysql start
 
 cp ~/.my.cnf /etc/mysql/conf.d/my.cnf
 
-sudo bash -c 'echo -e "[user]\n\tname = GridPane\n\temail = accounts@gridpane.com" > ~/.gitconfig'
-sudo wget -qO ee rt.cx/ee && sudo bash ee
+bash -c 'echo -e "[user]\n\tname = GridPane\n\temail = accounts@gridpane.com" > ~/.gitconfig'
+wget -qO ee rt.cx/ee && sudo bash ee
 
 source /etc/bash_completion.d/ee_auto.rc
 
