@@ -280,13 +280,13 @@ npm install -g yarn
 
 export DEBIAN_FRONTEND=noninteractive
 
-debconf-set-selections <<< "mariadb-server-10.2 mysql-server/data-dir select ''"
-debconf-set-selections <<< "mariadb-server-10.2 mysql-server/root_password password QEKcD3uHBb3dxOaTP5J0"
-debconf-set-selections <<< "mariadb-server-10.2 mysql-server/root_password_again password QEKcD3uHBb3dxOaTP5J0"
+debconf-set-selections <<< "mariadb-server-10.3 mysql-server/data-dir select ''"
+debconf-set-selections <<< "mariadb-server-10.3 mysql-server/root_password password QEKcD3uHBb3dxOaTP5J0"
+debconf-set-selections <<< "mariadb-server-10.3 mysql-server/root_password_again password QEKcD3uHBb3dxOaTP5J0"
 
 # Install MySQL
 
-apt-get install -y mariadb-server-10.2
+apt-get install -y mariadb-server-10.3
 
 # Configure Password Expiration
 
