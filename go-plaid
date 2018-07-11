@@ -19,7 +19,31 @@ mkswap /var/swap.img
 
 swapon -s /var/swap.img
 
+curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
+| sudo bash -s -- --mariadb-server-version=10.2 --skip-maxscale -y | sudo tee -a /tmp/ubuntu-nginx-web-server
+sudo apt update
+
+ROOT_SQL_PASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1; echo;)
+
+sudo debconf-set-selections <<< 'mariadb-server mysql-server/root_password password $ROOT_SQL_PASS'
+sudo debconf-set-selections <<< 'mariadb-server mysql-server/root_password_again password $ROOT_SQL_PASS'
+
+sudo apt-get install -y mariadb-server
+
+cat <<EOF >~/.my.cnf
+[client]
+user=root
+password=$ROOT_SQL_PASS
+EOF
+
+cp ~/.my.cnf /etc/mysql/conf.d/my.cnf
+
+
+sudo bash -c 'echo -e "[user]\n\tGridPane = abc\n\temail = accounts@gridpane.com" > ~/.gitconfig'
+
 wget -qO ee rt.cx/ee && sudo bash ee
+ee stack install 
+ee stack install --php7 --redis --admin --phpredisadmin 
 
 # Add A Few PPAs To Stay Current
 
