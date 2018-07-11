@@ -39,7 +39,7 @@ swapon -s /var/swap.img
 #cp ~/.my.cnf /etc/mysql/conf.d/my.cnf
 
 
-sudo bash -c 'echo -e "[user]\n\tGridPane = abc\n\temail = accounts@gridpane.com" > ~/.gitconfig'
+sudo bash -c 'echo -e "[user]\n\tname = GridPane\n\temail = accounts@gridpane.com" > ~/.gitconfig'
 
 wget -qO ee rt.cx/ee && sudo bash ee
 ee stack install 
