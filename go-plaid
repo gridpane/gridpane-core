@@ -46,15 +46,21 @@ swapon -s /var/swap.img
 #ee stack install --php7 --redis --admin --phpredisadmin 
 ### THIS WORKED BEFORE
 
+export DEBIAN_FRONTEND=noninteractive
+
 curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
 | bash -s -- --mariadb-server-version=10.3 --skip-maxscale -y
-apt-get update 
+apt-get update -q
+
+echo "Things are updated!"
 
 ROOT_SQL_PASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1; echo;)
-export DEBIAN_FRONTEND=noninteractive
+
 debconf-set-selections <<< 'mariadb-server-10.3 mysql-server/root_password password $ROOT_SQL_PASS'
 debconf-set-selections <<< 'mariadb-server-10.3 mysql-server/root_password_again password $ROOT_SQL_PASS'
-apt-get install -y mariadb-server
+apt-get install -q -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" mariadb-server
+
+echo "We got to here 1!"
 
 cat <<EOF >~/.my.cnf
  [client]
