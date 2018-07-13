@@ -1,70 +1,8 @@
-# setup-openresty
+# PLAID - The GridPane Stack
 
-This is just a small bash script for downloading + installing OpenResty.
+This stack/install of LOMP7+ (Linux, OpenResty, MariaDB 10.3 and PHP7.1+) is for use with GridPane provisioned servers. You can certainly use it on your own, outside of the GridPane SaaS service without support or updates. 
 
-It will install OpenResty to `/opt/openresty-${OPENRESTY_VERSION}` (or to a prefix
-of your choosing). It includes its own copy of LibreSSL, otherwise it tries
-to use the default system libraries, like PCRE, etc.
-
-It also downloads and installs Lua 5.1.5 + LuaRocks into `/opt/openresty-${OPENRESTY_VERSION}/luajit`.
-This provides compatibility when installing modules with LuaRocks. For example,
-the `lua-cjson` module fails to build with LuaJIT + LuaRocks, which makes it
-hard to install rocks like Lapis.
-
-If your system has `update-alternatives`, then it will
-add `/opt/openresty-${OPENRESTY_VERSION}/luajit/bin/lua` as an alternative for `/usr/bin/lua`,
-and `/opt/openresty-${OPENRESTY_VERSION}/luajit/bin/luac` as an alternative for `usr/bin/luac`.
-
-You can pass options to the script to enable/disable features - they mostly
-follow the OpenResty configure script options, with a few changes:
-
-* You can get pretty sloppy with dashes vs underscores. All these
-  accomplish the same thing
-  * `--with-http_dav_module`
-  * `--with-http-dav_module`
-  * `--with_http_dav_module`
-* You can get pretty sloppy about having the `_module` in your command line,
-so these also all do the same thing:
-  * `--with-http_dav`
-  * `--with-http-dav`
-* There's a few extra options for enabling some 3rd-party nginx modules not included with OpenResty
-  * `--with-stream-lua` -- enables [lua in TCP connections](https://github.com/openresty/stream-lua-nginx-module) (basically, OpenResty for TCP sockets)
-  * `--with-stream-echo` -- enables [echo in TCP connections](https://github.com/openresty/stream-echo-nginx-module)
-  * `--with-rtmp` - enables [rtmp](https://github.com/arut/nginx-rtmp-module)
-  * `--with-nchan` - enables [nchan](https://github.com/slact/nchan)
-  * `--with-ngx-lua-ipc` - enables [ngx_lua_ipc](https://github.com/slact/ngx_lua_ipc)
-* You can also pass `--minimal` to disable all non-essential modules/features (`http` is still enabled, though),
-then use `--with-(x)` to explicitly enable the features/modules you want
-* Alternatively, you can pass `--large` to enable all the modules/features, *except* the drizzle, iconv, and postgres
-modules. You'll still need to use `--with-iconv` etc to use those.
-* `--prefix=/some/path` - change the prefix from the default `/opt/openresty-${OPENRESTY_VERSION}` to some other path
-* `--symlink` This will create symlinks under `/usr/local/bin` for convenience:
-  * `/usr/local/bin/lua-openresty      -> /opt/openresty-${OPENRESTY_VERSION}/luajit/bin/lua`
-  * `/usr/local/bin/luac-openresty     -> /opt/openresty-${OPENRESTY_VERSION}/luajit/bin/luac`
-  * `/usr/local/bin/luajit-openresty   -> /opt/openresty-${OPENRESTY_VERSION}/luajit/bin/luajit`
-  * `/usr/local/bin/luarocks-openresty -> /opt/openresty-${OPENRESTY_VERSION}/luajit/bin/luarocks`
-  * `/usr/local/bin/openresty      -> /opt/openresty-${OPENRESTY_VERSION}/bin/openresty`
-  * `/usr/local/bin/opm            -> /opt/openresty-${OPENRESTY_VERSION}/bin/opm`
-  * `/usr/local/bin/resty          -> /opt/openresty-${OPENRESTY_VERSION}/bin/resty`
-  * `/usr/local/bin/restydoc       -> /opt/openresty-${OPENRESTY_VERSION}/bin/restydoc`
-  * `/usr/local/bin/restydoc-index -> /opt/openresty/bin/restydoc-index`
-
-## Compatibility
-
-All these distros were tested via Docker:
-
-* Debian Wheezy (7)
-* Debian Jessie (8)
-* Debian Stretch (9)
-* Ubuntu Precise (12.04)
-* Ubuntu Trusty (14.04)
-* Ubuntu Xenial (16.04)
-* CentOS 7
-* Fedora 25
-* Fedora 26
-* Alpine 3.5
-* Alpine 3.6
-* OpenSUSE 42.3
+YMMV, Use at your own risk, all that jazz...
 
 ## License
 
