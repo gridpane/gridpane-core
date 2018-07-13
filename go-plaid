@@ -548,45 +548,6 @@ OpenRestyBuild() {
 	}
 
 
-	if test "${DISTRO}" = "ubuntu"; then
-	  UPDATE_CMD="apt-get update"
-	  INSTALL_CMD="DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install"
-	  PACKAGE_LIST="linux-headers-generic libxslt-dev libgd-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev perl make gcc unzip curl git patch tar gzip"
-
-	elif test "${DISTRO}" = "debian" ; then
-	  UPDATE_CMD="apt-get update"
-	  INSTALL_CMD="apt-get install -y"
-	  PACKAGE_LIST="linux-headers-amd64 libxslt-dev libgd2-xpm-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev perl make gcc unzip curl git patch tar gzip"
-
-	elif test "${DISTRO}" = "centos" -o "${DISTRO}" = "rhel" ; then
-	  INSTALL_CMD="yum install -y"
-	  PACKAGE_LIST="kernel-headers libxslt-devel gd-devel GeoIP-devel zlib-devel readline-devel ncurses-devel pcre-devel perl make gcc unzip curl git patch tar gzip"
-
-	elif test "${DISTRO}" = "fedora" ; then
-	  INSTALL_CMD="dnf install -y"
-	  PACKAGE_LIST="kernel-headers libxslt-devel gd-devel geoip-devel zlib-devel readline-devel ncurses-devel pcre-devel perl make gcc unzip curl git patch tar gzip"
-
-	elif test "${DISTRO}" = "alpine" ; then
-	  UPDATE_CMD="apk update"
-	  INSTALL_CMD="apk add"
-	  PACKAGE_LIST="linux-headers gd-dev geoip-dev libxslt-dev musl-dev zlib-dev readline-dev ncurses-dev pcre-dev perl make unzip curl git patch gcc tar gzip"
-
-	elif test "${DISTRO}" = "opensuse" ; then
-	  INSTALL_CMD="zypper install -y"
-	  PACKAGE_LIST="kernel-headers libxslt-devel gd-devel libGeoIP-devel zlib-devel readline-devel ncurses-devel pcre-devel perl make gcc unzip curl git patch tar gzip"
-
-	elif test "${DISTRO}" = "arch" ; then
-	  UPDATE_CMD="pacman -Sy"
-	  INSTALL_CMD="pacman -S --needed --noconfirm"
-	  PACKAGE_LIST="linux-headers libxslt gd geoip zlib readline ncurses pcre perl make gcc unzip curl git patch tar gzip"
-
-	fi
-
-	if test -z "${INSTALL_CMD}" ; then
-	  printf "${DISTRO} is not supported - please open an issue\n"
-	  exit 1
-	fi
-
 	PACKAGE_LOGFILE=$(mktemp)
 
 	printf "Installing packages: ${PACKAGE_LIST}\n" | tee -a $PACKAGE_LOGFILE
@@ -596,7 +557,7 @@ OpenRestyBuild() {
 	fi
 	#${INSTALL_CMD} ${PACKAGE_LIST} 2>&1 | tee -a $PACKAGE_LOGFILE
 
-	DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install linux-headers-generic libxslt-dev libgd2-xpm-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev perl make gcc unzip curl git patch tar gzip
+	DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install linux-headers-generic libxslt-dev libgd-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev perl make gcc unzip curl git patch tar gzip
 
 	if ! test -d "/src" ; then
 	  mkdir "/src"
