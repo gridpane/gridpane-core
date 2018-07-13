@@ -147,7 +147,6 @@ php7.2-imap php7.2-mysql php7.2-mbstring \
 php7.2-xml php7.2-zip php7.2-bcmath php7.2-soap \
 php7.2-intl php7.2-readline
 
-echo "PHP7.2 Installed..."
 
 # Install Composer Package Manager
 
@@ -174,8 +173,6 @@ chmod +t /var/lib/php/sessions
 #
 
 # Install Nginx & PHP-FPM
-
-echo "Installing OpenResty..."
 
 OpenRestyBuild() {
 	
@@ -554,7 +551,7 @@ OpenRestyBuild() {
 	if test "${DISTRO}" = "ubuntu"; then
 	  UPDATE_CMD="apt-get update"
 	  INSTALL_CMD="DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install"
-	  PACKAGE_LIST="linux-headers-generic libxslt-dev libgd2-xpm-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev perl make gcc unzip curl git patch tar gzip"
+	  PACKAGE_LIST="linux-headers-generic libxslt-dev libgd-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev libpcre3-dev perl make gcc unzip curl git patch tar gzip"
 
 	elif test "${DISTRO}" = "debian" ; then
 	  UPDATE_CMD="apt-get update"
