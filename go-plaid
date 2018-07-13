@@ -18,11 +18,14 @@ apt-get upgrade -y
 apt-get install -y --force-yes software-properties-common
 
 # apt-add-repository ppa:fkrull/deadsnakes-python2.7 -y
+
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C
+
 apt-add-repository ppa:nginx/development -y
 apt-add-repository ppa:chris-lea/redis-server -y
 apt-add-repository ppa:ondrej/apache2 -y
 
-	apt-add-repository ppa:ondrej/php -y
+apt-add-repository ppa:ondrej/php -y
 
 # Setup MySQL 5.7 Repositories
 
@@ -144,6 +147,7 @@ php7.2-imap php7.2-mysql php7.2-mbstring \
 php7.2-xml php7.2-zip php7.2-bcmath php7.2-soap \
 php7.2-intl php7.2-readline
 
+echo "PHP7.2 Installed..."
 
 # Install Composer Package Manager
 
@@ -170,6 +174,8 @@ chmod +t /var/lib/php/sessions
 #
 
 # Install Nginx & PHP-FPM
+
+echo "Installing OpenResty..."
 
 OpenRestyBuild() {
 	
