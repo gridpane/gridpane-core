@@ -13,11 +13,7 @@ export DEBIAN_FRONTEND=noninteractive
 sudo apt-get update
 sudo apt-get upgrade -y && apt-get autoremove -y && apt-get clean
 
-# Add A Few PPAs To Stay Current
-
 apt-get install -y --force-yes software-properties-common
-
-# apt-add-repository ppa:fkrull/deadsnakes-python2.7 -y
 
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C
 
@@ -26,8 +22,6 @@ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C
 #apt-add-repository ppa:ondrej/apache2 -y
 
 #apt-add-repository ppa:ondrej/php -y
-
-# Setup MySQL 5.7 Repositories
 
 
 # Setup MariaDB Repositories
@@ -52,17 +46,17 @@ debconf-set-selections <<< "mariadb-server-10.3 mysql-server/root_password_again
 
 apt-get install -y mariadb-server-10.3
 
-wget -O /etc/mysql/my.cnf https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/mysql/my.cnf
+#wget -O /etc/mysql/my.cnf https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/mysql/my.cnf
 
-sudo service mysql stop
+#sudo service mysql stop
 
-sudo mv /var/lib/mysql/ib_logfile0 /var/lib/mysql/ib_logfile0.bak
-sudo mv /var/lib/mysql/ib_logfile1 /var/lib/mysql/ib_logfile1.bak
+#sudo mv /var/lib/mysql/ib_logfile0 /var/lib/mysql/ib_logfile0.bak
+#sudo mv /var/lib/mysql/ib_logfile1 /var/lib/mysql/ib_logfile1.bak
 
-wget -O /etc/systemd/system/mariadb.service.d/limits.conf https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/systemd/system/mariadb.service.d/limits.conf
-sudo systemctl daemon-reload
+#wget -O /etc/systemd/system/mariadb.service.d/limits.conf https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/systemd/system/mariadb.service.d/limits.conf
+#sudo systemctl daemon-reload
 
-sudo service mysql start
+#sudo service mysql start
 
 echo "[client]" > ~/.my.cnf
 echo "user= root" >> ~/.my.cnf
