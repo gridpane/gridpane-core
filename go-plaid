@@ -903,7 +903,7 @@ EOF
 	  ln -s $PREFIX/bin/opm             /usr/local/openresty/opm
 	  ln -s $PREFIX/site/lualib         /usr/local/openresty/site/lualib
   
-	PATH=/usr/local/sbin:/usr/local/bin:/usr/local/openresty:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:$PATH
+	export PATH=/usr/local/sbin:/usr/local/bin:/usr/local/openresty:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:$PATH
   
 
 	if [ command -v update-alternatives 1>/dev/null 2>&1 ] ; then
@@ -931,9 +931,13 @@ OpenRestyBuild
 
 	apt-get install -y --force-yes php7.2-fpm
 
-systemctl enable nginx.service
+# THIS DOESNT WORK... systemctl enable nginx.service
 
 # Generate dhparam File
+
+mkdir -p /etc/nginx
+
+#THIS PREVIOUSLY DIDNT WORK... NEED CONFIGS
 
 openssl dhparam -out /etc/nginx/dhparams.pem 2048
 
