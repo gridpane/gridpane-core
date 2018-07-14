@@ -50,11 +50,200 @@ debconf-set-selections <<< "mariadb-server-10.3 mysql-server/root_password_again
 
 apt-get install -y mariadb-server-10.3
 
+wget -O /etc/mysql/my.cnf https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/mysql/my.cnf
+
+sudo service mysql stop
+
+sudo mv /var/lib/mysql/ib_logfile0 /var/lib/mysql/ib_logfile0.bak
+sudo mv /var/lib/mysql/ib_logfile1 /var/lib/mysql/ib_logfile1.bak
+
+wget -O /etc/systemd/system/mariadb.service.d/limits.conf https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/systemd/system/mariadb.service.d/limits.conf
+sudo systemctl daemon-reload
+
+sudo service mysql start
+
 sudo bash -c 'echo -e "[user]\n\tname = abc\n\temail = root@localhost.com" > /root/.gitconfig'
 
 wget -qO ee rt.cx/ee && sudo bash ee
 
+source /etc/bash_completion.d/ee_auto.rc
+
+ee stack install
+
 yes | yes | ee site create example.com --wpredis --php7
+
+sudo apt-get install php7.1-fpm php7.1-cli php7.1-zip php7.1-opcache php7.1-mysql php7.1-mcrypt php7.1-mbstring php7.1-json php7.1-intl \
+php7.1-gd php7.1-curl php7.1-bz2 php7.1-xml php7.1-tidy php7.1-soap php7.1-bcmath -y php7.1-xsl
+
+sudo wget -O /etc/php/7.1/fpm/pool.d/www.conf https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/php/7.1/fpm/pool.d/www.conf
+
+sudo wget -O /etc/php/7.1/fpm/php.ini https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/php/7.1/fpm/php.ini
+wget -O  /etc/php/7.1/cli/php.ini https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/php/7.1/cli/php.ini
+sudo service php7.1-fpm restart
+
+sudo apt-get install php7.2-fpm php7.2-xml php7.2-bz2  php7.2-zip php7.2-mysql  php7.2-intl php7.2-gd php7.2-curl php7.2-soap php7.2-mbstring -y
+
+wget -O /etc/php/7.2/fpm/pool.d/www.conf https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/php/7.2/fpm/pool.d/www.conf
+wget -O  /etc/php/7.2/cli/php.ini https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/php/7.2/cli/php.ini
+service php7.2-fpm restart
+
+wget -O /etc/php/7.0/cli/php.ini https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/php/7.0/cli/php.ini
+wget -O /etc/php/7.0/fpm/php.ini https://virtubox.github.io/ubuntu-nginx-web-server/files/etc/php/7.0/fpm/php.ini
+
+apt-get install -y unip 
+
+cd /etc/nginx/common || exit
+wget https://virtubox.github.io/ubuntu-nginx-web-server/files/common.zip
+unzip common.zip
+
+NGINX_STABLE=1.15.0
+
+NGINX_RELEASE=$NGINX_STABLE
+
+ngx_naxsi="--add-module=/usr/local/src/naxsi/naxsi_src "
+
+## install prerequisites 
+
+#ProgressCurl=$(curl -d '{"percentage":"30", "detail":"Slow Roasting NGINX. Wait for it...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+
+
+apt-get update >> /tmp/nginx-build.log 2>&1 
+apt-get install -y git build-essential libtool automake autoconf zlib1g-dev \
+libpcre3-dev libgd-dev libssl-dev libxslt1-dev libxml2-dev libgeoip-dev \
+libgoogle-perftools-dev libperl-dev libpam0g-dev libxslt1-dev libbsd-dev >> /tmp/nginx-build.log 2>&1
+
+
+## clean previous compilation
+
+rm -rf /usr/local/src/* >> /tmp/nginx-build.log 2>&1
+cd /usr/local/src || exit 
+
+## get additionals modules
+
+{
+git clone https://github.com/FRiCKLE/ngx_cache_purge.git
+git clone https://github.com/openresty/memc-nginx-module.git
+git clone https://github.com/simpl/ngx_devel_kit.git
+git clone https://github.com/openresty/headers-more-nginx-module.git
+git clone https://github.com/openresty/echo-nginx-module.git
+git clone https://github.com/yaoweibin/ngx_http_substitutions_filter_module.git
+git clone https://github.com/openresty/redis2-nginx-module.git
+git clone https://github.com/openresty/srcache-nginx-module.git
+git clone https://github.com/openresty/set-misc-nginx-module.git
+git clone https://github.com/sto/ngx_http_auth_pam_module.git
+} >> /tmp/nginx-build.log 2>&1
+
+#ProgressCurl=$(curl -d '{"percentage":"33", "detail":"Adding packages. This is gonna take a minute...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+
+## ipsrcub module to anonymize user IP in nginx logs
+git clone https://github.com/masonicboom/ipscrub.git ipscrubtmp >> /tmp/nginx-build.log 2>&1
+cp -rf /usr/local/src/ipscrubtmp/ipscrub /usr/local/src/ipscrub >> /tmp/nginx-build.log 2>&1
+
+wget https://people.freebsd.org/~osa/ngx_http_redis-0.3.8.tar.gz >> /tmp/nginx-build.log 2>&1
+tar -zxf ngx_http_redis-0.3.8.tar.gz >> /tmp/nginx-build.log 2>&1
+mv ngx_http_redis-0.3.8 ngx_http_redis 
+
+# get brotli
+
+git clone https://github.com/google/ngx_brotli.git >> /tmp/nginx-build.log 2>&1
+cd ngx_brotli || exit
+git submodule update --init --recursive >> /tmp/nginx-build.log 2>&1
+
+cd /usr/local/src || exit
+
+git clone https://github.com/openssl/openssl.git >> /tmp/nginx-build.log 2>&1
+cd openssl || exit
+git checkout tls1.3-draft-18 >> /tmp/nginx-build.log 2>&1
+
+cd /usr/local/src || exit
+
+git clone https://github.com/nbs-system/naxsi.git >> /tmp/nginx-build.log 2>&1
+  
+cd /usr/local/src || exit
+
+## get nginx
+
+wget http://nginx.org/download/nginx-${NGINX_RELEASE}.tar.gz >> /tmp/nginx-build.log 2>&1
+tar -xzvf nginx-${NGINX_RELEASE}.tar.gz >> /tmp/nginx-build.log 2>&1
+mv nginx-${NGINX_RELEASE} nginx
+
+cd /usr/local/src/nginx/ || exit
+
+## apply dynamic tls records patch
+
+wget https://raw.githubusercontent.com/cujanovic/nginx-dynamic-tls-records-patch/master/nginx__dynamic_tls_records_1.13.0%2B.patch >> /tmp/nginx-build.log 2>&1
+patch -p1 < nginx__dynamic_tls_records_1.13*.patch >> /tmp/nginx-build.log 2>&1
+
+## configuration
+
+#ProgressCurl=$(curl -d '{"percentage":"36", "detail":"Configuring Nginx... Deep breaths.", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+
+
+./configure \
+ --add-module=/usr/local/src/naxsi/naxsi_src \
+ --with-cc-opt='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \
+ --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie' \
+ --prefix=/usr/share/nginx  \
+ --conf-path=/etc/nginx/nginx.conf \
+ --http-log-path=/var/log/nginx/access.log \
+ --error-log-path=/var/log/nginx/error.log \
+ --lock-path=/var/lock/nginx.lock \
+ --pid-path=/run/nginx.pid \
+ --http-client-body-temp-path=/var/lib/nginx/body \
+ --http-fastcgi-temp-path=/var/lib/nginx/fastcgi \
+ --http-proxy-temp-path=/var/lib/nginx/proxy \
+ --http-scgi-temp-path=/var/lib/nginx/scgi  \
+ --http-uwsgi-temp-path=/var/lib/nginx/uwsgi  \
+ --with-pcre-jit  \
+ --with-http_ssl_module  \
+ --with-http_stub_status_module  \
+ --with-http_realip_module  \
+ --with-http_auth_request_module  \
+ --with-http_addition_module  \
+ --with-http_geoip_module  \
+ --with-http_gzip_static_module  \
+ --with-http_image_filter_module  \
+ --with-http_v2_module  \
+ --with-http_sub_module  \
+ --with-http_xslt_module  \
+ --with-file-aio \
+ --with-threads  \
+ --add-module=/usr/local/src/ngx_cache_purge  \
+ --add-module=/usr/local/src/memc-nginx-module \
+ --add-module=/usr/local/src/ngx_devel_kit  \
+ --add-module=/usr/local/src/headers-more-nginx-module \
+ --add-module=/usr/local/src/echo-nginx-module  \
+ --add-module=/usr/local/src/ngx_http_substitutions_filter_module  \
+ --add-module=/usr/local/src/redis2-nginx-module  \
+ --add-module=/usr/local/src/srcache-nginx-module  \
+ --add-module=/usr/local/src/set-misc-nginx-module  \
+ --add-module=/usr/local/src/ngx_http_redis   \
+ --add-module=/usr/local/src/ngx_brotli  \
+ --add-module=/usr/local/src/ipscrub   \
+ --add-module=/usr/local/src/ngx_http_auth_pam_module \
+ --with-openssl=/usr/local/src/openssl \
+ --with-openssl-opt=enable-tls1_3 \
+ --sbin-path=/usr/sbin/nginx  >> /tmp/nginx-build.log 2>&1
+ 
+ ## compilation
+ 
+#ProgressCurl=$(curl -d '{"percentage":"39", "detail":"Compiling Nginx... Almost there.", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+ 
+make -j >> /tmp/nginx-build.log 2>&1
+make install >> /tmp/nginx-build.log 2>&1
+
+## restart nginx with systemd
+	
+#systemctl unmask sw-nginx >> /tmp/nginx-build.log
+#systemctl enable nginx >> /tmp/nginx-build.log
+
+wget -O /lib/systemd/system/nginx.service https://raw.githubusercontent.com/thewzrd/plaid/master/nginx.service >> /tmp/nginx-build.log
+
+systemctl start nginx >> /tmp/nginx-build.log
+apt-mark hold nginx-common >> /tmp/nginx-build.log
+systemctl restart nginx >> /tmp/nginx-build.log
+nginx -t >> /tmp/nginx-build.log
+service nginx reload >> /tmp/nginx-build.log
 
 mainend=$(date +%s)
 totalruntime=$((mainend-mainstart))
