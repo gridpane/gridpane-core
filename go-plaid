@@ -10,11 +10,51 @@ sudo sed -i "s/#precedence ::ffff:0:0\/96  100/precedence ::ffff:0:0\/96  100/" 
 
 export DEBIAN_FRONTEND=noninteractive
 
+apt-get update
+apt-get upgrade -y
+
+# Add A Few PPAs To Stay Current
+
+apt-get install -y --force-yes software-properties-common
+
+# apt-add-repository ppa:fkrull/deadsnakes-python2.7 -y
+
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C
+
+apt-add-repository ppa:nginx/development -y
+apt-add-repository ppa:chris-lea/redis-server -y
+apt-add-repository ppa:ondrej/apache2 -y
+
+apt-add-repository ppa:ondrej/php -y
+
+# Setup MySQL 5.7 Repositories
+
+
+# Setup MariaDB Repositories
+
+    sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+    sudo add-apt-repository 'deb [arch=amd64,i386] http://mirrors.accretive-networks.net/mariadb/repo/10.3/ubuntu xenial main'
+
+
+# Update Package Lists
+
+apt-get update
+
+export DEBIAN_FRONTEND=noninteractive
+
+debconf-set-selections <<< "mariadb-server-10.3 mysql-server/data-dir select ''"
+debconf-set-selections <<< "mariadb-server-10.3 mysql-server/root_password password QEKcD3uHBb3dxOaTP5J0"
+debconf-set-selections <<< "mariadb-server-10.3 mysql-server/root_password_again password QEKcD3uHBb3dxOaTP5J0"
+
+# Install MySQL
+
+apt-get install -y mariadb-server-10.3
+
 sudo bash -c 'echo -e "[user]\n\tname = abc\n\temail = root@localhost.com" > /root/.gitconfig'
 
 wget -qO ee rt.cx/ee && sudo bash ee
 
-y | y | ee site create example.com --wpredis --php7
+yes | yes | ee site create example.com --wpredis --php7
 
 mainend=$(date +%s)
 totalruntime=$((mainend-mainstart))
