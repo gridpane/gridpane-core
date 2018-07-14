@@ -42,9 +42,11 @@ apt-get update
 
 export DEBIAN_FRONTEND=noninteractive
 
+DBROOT=$(date +%s | sha256sum | base64 | head -c 20 ; echo)
+
 debconf-set-selections <<< "mariadb-server-10.3 mysql-server/data-dir select ''"
-debconf-set-selections <<< "mariadb-server-10.3 mysql-server/root_password password QEKcD3uHBb3dxOaTP5J0"
-debconf-set-selections <<< "mariadb-server-10.3 mysql-server/root_password_again password QEKcD3uHBb3dxOaTP5J0"
+debconf-set-selections <<< "mariadb-server-10.3 mysql-server/root_password password $DBROOT"
+debconf-set-selections <<< "mariadb-server-10.3 mysql-server/root_password_again password $DBROOT"
 
 # Install MySQL
 
@@ -62,13 +64,19 @@ sudo systemctl daemon-reload
 
 sudo service mysql start
 
+echo "[client]" > ~/.my.cnf
+echo "user= root" >> ~/.my.cnf
+echo "password= $DBROOT" >> ~/.my.cnf
+
 sudo bash -c 'echo -e "[user]\n\tname = abc\n\temail = root@localhost.com" > /root/.gitconfig'
 
 wget -qO ee rt.cx/ee && sudo bash ee
 
 source /etc/bash_completion.d/ee_auto.rc
 
-ee stack install
+ee stack install --nginx
+
+ee stack install --php7 --redis
 
 yes | yes | ee site create example.com --wpredis --php7
 
