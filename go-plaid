@@ -102,15 +102,6 @@ sed -i '/location ~ \\.php$ {/a\			access_by_lua_block {' /etc/nginx/common/wpfc
 
 service nginx restart
 
-mkdir -p /usr/local/src
-
-cd /usr/local/src
-
-#git clone --recursive https://github.com/p0pr0ck5/lua-resty-waf.git && \
-#	    cd lua-resty-waf && \
-#	    make && \
-#	    make install > /opt/gridpane/waf-build.log
-
 sleep 2
 
 apt-get install -y luarocks
@@ -125,7 +116,18 @@ service nginx start
 
 sleep 3
 
-luarocks install lua-resty-waf > /opt/gridpane/waf-build.log
+echo $PATH > /opt/gridpane/waf-build.path
+
+#luarocks install lua-resty-waf > /opt/gridpane/waf-build.log
+
+mkdir -p /usr/local/src
+
+cd /usr/local/src
+
+git clone --recursive https://github.com/p0pr0ck5/lua-resty-waf.git && \
+	    cd lua-resty-waf && \
+	    make > /opt/gridpane/waf-build.log && \
+	    make install >> /opt/gridpane/waf-build.log
 
 service nginx stop 
 
