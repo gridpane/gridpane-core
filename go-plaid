@@ -115,7 +115,7 @@ sleep 2
 
 apt-get install -y luarocks
 
-PATH=/usr/local/openresty/bin:/usr/local/openresty:$PATH
+PATH=/usr/local/openresty/site:/usr/local/openresty/bin:/usr/local/openresty:$PATH
 
 service nginx stop 
 
