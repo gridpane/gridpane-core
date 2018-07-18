@@ -117,6 +117,14 @@ apt-get install -y luarocks
 
 PATH=/usr/local/openresty/bin:/usr/local/openresty:$PATH
 
+service nginx stop 
+
+lsof -P | grep ':80' | awk '{print $2}' | xargs kill -9
+
+service nginx start
+
+sleep 3
+
 luarocks install lua-resty-waf > /opt/gridpane/waf-build.log
 
 service nginx stop 
