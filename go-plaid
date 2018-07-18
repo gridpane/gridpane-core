@@ -115,6 +115,8 @@ sleep 2
 
 apt-get install -y luarocks
 
+PATH=/usr/local/openresty/bin:/usr/local/openresty:$PATH
+
 luarocks install lua-resty-waf > /opt/gridpane/waf-build.log
 
 service nginx stop 
