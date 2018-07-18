@@ -104,7 +104,7 @@ service nginx restart
 
 sleep 2
 
-apt-get install -y luarocks
+sudo apt-get install -y luarocks
 
 export PATH=/usr/local/openresty/site/lualib:/usr/local/openresty/site:/usr/local/openresty/bin:/usr/local/openresty:$PATH
 
@@ -145,7 +145,7 @@ mkdir -p /usr/local/src
 
 #cd /usr/local/src
 
-luarocks install lua-resty-waf > /opt/gridpane/waf-build.log
+sudo luarocks install lua-resty-waf > /opt/gridpane/waf-build.log
 
 #git clone --recursive https://github.com/p0pr0ck5/lua-resty-waf.git && \
 #	    cd lua-resty-waf && \
