@@ -118,16 +118,39 @@ sleep 3
 
 echo $PATH > /opt/gridpane/waf-build.path
 
-#luarocks install lua-resty-waf > /opt/gridpane/waf-build.log
+PREFIX=/usr/local/openresty
+ln -s $PREFIX/luajit/bin/lua      /usr/local/bin/lua-openresty
+ln -s $PREFIX/luajit/bin/luac     /usr/local/bin/luac-openresty
+ln -s $PREFIX/luajit/bin/luajit   /usr/local/bin/luajit-openresty
+ln -s $PREFIX/bin/luarocks        /usr/local/bin/luarocks-openresty
+ln -s $PREFIX/bin/resty           /usr/local/bin/resty
+ln -s $PREFIX/bin/restydoc        /usr/local/bin/restydoc
+ln -s $PREFIX/bin/restydoc-index  /usr/local/bin/restydoc-index
+ln -s $PREFIX/bin/openresty       /usr/local/bin/openresty
+ln -s $PREFIX/bin/opm             /usr/local/bin/opm
+ln -s $PREFIX/bin                 /usr/local/openresty/bin
+ln -s $PREFIX/site                /usr/local/openresty/site
+ln -s $PREFIX/luajit/bin/lua      /usr/local/openresty/lua-openresty
+ln -s $PREFIX/luajit/bin/luac     /usr/local/openresty/luac-openresty
+ln -s $PREFIX/luajit/bin/luajit   /usr/local/openresty/luajit-openresty
+ln -s $PREFIX/bin/luarocks        /usr/local/openresty/luarocks-openresty
+ln -s $PREFIX/bin/resty           /usr/local/openresty/resty
+ln -s $PREFIX/bin/restydoc        /usr/local/openresty/restydoc
+ln -s $PREFIX/bin/restydoc-index  /usr/local/openresty/restydoc-index
+ln -s $PREFIX/bin/openresty       /usr/local/openresty/openresty
+ln -s $PREFIX/bin/opm             /usr/local/openresty/opm
+ln -s $PREFIX/site/lualib         /usr/local/openresty/site/lualib
 
 mkdir -p /usr/local/src
 
-cd /usr/local/src
+#cd /usr/local/src
 
-git clone --recursive https://github.com/p0pr0ck5/lua-resty-waf.git && \
-	    cd lua-resty-waf && \
-	    make > /opt/gridpane/waf-build.log && \
-	    make install >> /opt/gridpane/waf-build.log
+luarocks install lua-resty-waf > /opt/gridpane/waf-build.log
+
+#git clone --recursive https://github.com/p0pr0ck5/lua-resty-waf.git && \
+#	    cd lua-resty-waf && \
+#	    make > /opt/gridpane/waf-build.log && \
+#	    make install >> /opt/gridpane/waf-build.log
 
 service nginx stop 
 
