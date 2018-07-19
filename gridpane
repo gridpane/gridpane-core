@@ -10,7 +10,7 @@ sudo sed -i "s/#precedence ::ffff:0:0\/96  100/precedence ::ffff:0:0\/96  100/" 
 
 mkdir -p /opt/gridpane/logs
 
-wget -qO weby qrok.es/wy && sudo bash weby 3 > /opt/gridpane/logs/first-build.log
+wget -qO go-plaid gridpane.com/plaid/go-plaid && sudo bash go-plaid 3 > /opt/gridpane/logs/first-build.log
 
 sleep 2
 
