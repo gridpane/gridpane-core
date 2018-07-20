@@ -38,7 +38,7 @@ sleep 5
 
 service nginx stop
 
-sudo apt-get -y install openresty
+sudo apt-get -y install openresty >> /opt/gridpane/resty.log
 
 mv /usr/sbin/nginx /usr/sbin/nginx.old
 
