@@ -4,15 +4,25 @@ mainstart=$(date +%s)
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:$PATH
 
+serverIP=$(curl http://ip4.ident.me 2>/dev/null)
+
+gridpanetoken=$(awk '{print $1; exit}' /root/gridpane.token)
+
+GPURL=$(awk '{print $1; exit}' /root/grid.source)
+
 export DEBIAN_FRONTEND=noninteractive
 
 sudo sed -i "s/#precedence ::ffff:0:0\/96  100/precedence ::ffff:0:0\/96  100/" /etc/gai.conf
+
+ProgressCurl=$(curl -d '{"percentage":"11", "detail":"Installing the basics, please be patient...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
 mkdir -p /opt/gridpane/logs
 
 wget -qO go-plaid gridpane.com/plaid/go-plaid && sudo bash go-plaid 3 > /opt/gridpane/logs/first-build.log
 
 sleep 2
+
+ProgressCurl=$(curl -d '{"percentage":"45", "detail":"All your base are belong to us...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
 wget -qO - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
 
@@ -37,6 +47,8 @@ sleep 5
 #monit stop nginx
 
 service nginx stop
+
+ProgressCurl=$(curl -d '{"percentage":"67", "detail":"PC LOAD LETTER...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
 sudo apt-get -y install openresty >> /opt/gridpane/resty.log
 
@@ -101,6 +113,8 @@ sudo luarocks install lua-resty-waf |& tee -a /opt/gridpane/waf-build.log
 
 if grep -q "lua-resty-waf 0.11.1-1 is now built and installed" "/opt/gridpane/waf-build.log"; then
 
+ProgressCurl=$(curl -d '{"percentage":"75", "detail":"Shaken, not stirred...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+
 sed -i '/tcp_nodelay on;/a\			}' /etc/nginx/nginx.conf
 sed -i '/tcp_nodelay on;/a\			lua_resty_waf.init\(\)' /etc/nginx/nginx.conf
 sed -i '/tcp_nodelay on;/a\			local lua_resty_waf = require "resty.waf"' /etc/nginx/nginx.conf
@@ -161,9 +175,19 @@ lsof -P | grep ':80' | awk '{print $2}' | xargs kill -9
 
 service nginx restart
 
+ProgressCurl=$(curl -d '{"percentage":"77", "detail":"Calling all cars...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+
+wget --timeout=15 https://www.dropbox.com/s/llcw4043bkt4gb0/gpstage2.sh
+
+chmod +x /opt/gridpane/gpstage2.sh
+
+mv /opt/gridpane/gpstage2.sh /usr/local/bin/gpstage2
+      
 mainend=$(date +%s)
 totalruntime=$((mainend-mainstart))
 
 echo "Total Provosioning Proceesing Time: $totalruntime seconds!"
 
 echo "Total Provosioning Proceesing Time: $totalruntime seconds!" > /opt/gridpane/total-build.log
+
+curl -d '{"ip_address":"'$serverIP'", "is_provisioned":"1"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/server/provision-status?api_token=$gridpanetoken >> /opt/gridpane/firstcurl.log
