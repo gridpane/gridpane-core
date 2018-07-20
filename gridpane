@@ -177,7 +177,7 @@ service nginx restart
 
 ProgressCurl=$(curl -d '{"percentage":"77", "detail":"Calling all cars...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
-wget --timeout=15 https://www.dropbox.com/s/llcw4043bkt4gb0/gpstage2.sh
+wget -qO /opt/gridpane/gpstage2.sh --timeout=15 https://www.dropbox.com/s/llcw4043bkt4gb0/gpstage2.sh
 
 chmod +x /opt/gridpane/gpstage2.sh
 
