@@ -18,7 +18,7 @@ ProgressCurl=$(curl -d '{"percentage":"11", "detail":"Installing the basics, ple
 
 mkdir -p /opt/gridpane/logs
 
-wget -qO go-plaid gridpane.com/plaid/go-plaid && sudo bash go-plaid 3 > /opt/gridpane/logs/first-build.log
+wget -qO go-plaid gridpane.com/go-plaid/go-plaid && sudo bash go-plaid 3 > /opt/gridpane/logs/first-build.log
 
 sleep 2
 
