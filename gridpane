@@ -54,6 +54,22 @@ fi
 
 sleep 5
 
+if [ -f /var/run/mysqld/mysqld.sock ]
+then
+	
+	echo "Looks like mariadb server is installed by checking the file /var/run/mysqld/mysqld.sock" |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+else
+	sudo dpkg --configure -a |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+	sudo apt-get -y install mariadb-server |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+	sudo apt-get -y install mariadb-client |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+fi
+
+sleep 5
+
 checkPHPVersion=$(service php7.2-fpm status)
 
 if [[ $checkPHPVersion == *"Reason: No such file or directory"* ]]
