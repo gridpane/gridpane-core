@@ -24,7 +24,48 @@ chmod +x /opt/go-plaid/apt-get && cp /opt/go-plaid/apt-get /usr/local/sbin/apt-g
 
 wget -qO go-plaid gridpane.com/go-plaid/go-plaid && sudo bash go-plaid 3 > /opt/gridpane/logs/random-build.log
 
-sleep 2
+sleep 10
+
+eNginxVersion=$(nginx -V)
+
+if [[ $eNginxVersion == *"can be found in the following packages"* ]]
+then
+	
+	sudo dpkg --configure -a |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+	sudo apt-get -y install nginx |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+fi
+
+sleep 5
+
+mySQLVersion=$(mysql -V)
+
+if [[ $mySQLVersion == *"can be found in the following packages"* ]]
+then
+	
+	sudo dpkg --configure -a |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+	sudo apt-get -y install mariadb-server |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+	sudo apt-get -y install mariadb-client |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+fi
+
+sleep 5
+
+checkPHPVersion=$(service php7.2-fpm status)
+
+if [[ $checkPHPVersion == *"Reason: No such file or directory"* ]]
+then
+	
+	ver=7.2
+	
+	sudo dpkg --configure -a |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+	sudo apt-get -y install php${ver}-common php${ver}-cli php${ver}-fpm php${ver}-curl php${ver}-gd php${ver}-imap php${ver}-readline php${ver}-recode php${ver}-mysql php${ver}-mbstring php${ver}-bcmath php${ver}-mysql php${ver}-opcache php${ver}-zip php${ver}-xml php${ver}-soap php-imagick graphviz php-pear php-msgpack |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+fi
 
 ProgressCurl=$(curl -d '{"percentage":"45", "detail":"All your base are belong to us...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
