@@ -90,7 +90,7 @@ checkPHPVersion=$(service php7.2-fpm status)
 if [[ $checkPHPVersion == *"Reason: No such file or directory"* ]]
 then
 	
-	echo "***** LOOKS LIKE WE HAVE AN MYSQL ERROR!!! ******" |& tee -a /opt/gridpane/logs/plaid-build.log
+	echo "***** LOOKS LIKE WE HAVE AN PHP ERROR!!! ******" |& tee -a /opt/gridpane/logs/plaid-build.log
 	
 	ver=7.2
 	
