@@ -42,6 +42,20 @@ then
 	
 fi
 
+if [ -f /etc/nginx/nginx.conf ]
+then
+	
+	echo "Nginx.conf is present..." |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+else
+	echo "***** LOOKS LIKE NGINX.CONF is MISSING!!! ******" |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+	sudo dpkg --configure -a |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+	sudo apt-get -y install nginx |& tee -a /opt/gridpane/logs/plaid-build.log
+	
+fi
+
 sleep 5
 
 echo "**** Checking MYSQL Install... ****** " |& tee -a /opt/gridpane/logs/plaid-build.log 
