@@ -26,10 +26,15 @@ wget -qO go-plaid gridpane.com/go-plaid/go-plaid && sudo bash go-plaid 3 > /opt/
 
 sleep 10
 
+echo "**** Checking NGINX Install... ****** " |& tee -a /opt/gridpane/logs/plaid-build.log 
+
+nginx -V |& tee -a /opt/gridpane/logs/plaid-build.log 
+
 eNginxVersion=$(nginx -V)
 
 if [[ $eNginxVersion == *"can be found in the following packages"* ]]
 then
+	echo "***** LOOKS LIKE WE HAVE AN NGINX ERROR!!! ******" |& tee -a /opt/gridpane/logs/plaid-build.log 
 	
 	sudo dpkg --configure -a |& tee -a /opt/gridpane/logs/plaid-build.log
 	
@@ -39,10 +44,16 @@ fi
 
 sleep 5
 
+echo "**** Checking MYSQL Install... ****** " |& tee -a /opt/gridpane/logs/plaid-build.log 
+
+mysql -V |& tee -a /opt/gridpane/logs/plaid-build.log 
+
 mySQLVersion=$(mysql -V)
 
 if [[ $mySQLVersion == *"can be found in the following packages"* ]]
 then
+	
+	echo "***** LOOKS LIKE WE HAVE AN MYSQL ERROR!!! ******" |& tee -a /opt/gridpane/logs/plaid-build.log 
 	
 	sudo dpkg --configure -a |& tee -a /opt/gridpane/logs/plaid-build.log
 	
@@ -70,10 +81,16 @@ fi
 
 sleep 5
 
+echo "**** Checking PHP Install... ****** " |& tee -a /opt/gridpane/logs/plaid-build.log 
+
+service php7.2-fpm status |& tee -a /opt/gridpane/logs/plaid-build.log
+
 checkPHPVersion=$(service php7.2-fpm status)
 
 if [[ $checkPHPVersion == *"Reason: No such file or directory"* ]]
 then
+	
+	echo "***** LOOKS LIKE WE HAVE AN MYSQL ERROR!!! ******" |& tee -a /opt/gridpane/logs/plaid-build.log
 	
 	ver=7.2
 	
