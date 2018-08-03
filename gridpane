@@ -32,7 +32,7 @@ nginx -V |& tee -a /opt/gridpane/logs/plaid-build.log
 
 eNginxVersion=$(nginx -V)
 
-if [[ $eNginxVersion == *"can be found in the following packages"* ]] || [[ $eNginxVersion == *"command not found"* ]]
+if [[ $eNginxVersion == *"can be found in the following packages"* ]] || [[ $eNginxVersion == *"command not found"* ]] || [[ $eNginxVersion == *"nginx/1.10.3"* ]] 
 then
 	echo "***** LOOKS LIKE WE HAVE AN NGINX ERROR!!! ******" |& tee -a /opt/gridpane/logs/plaid-build.log 
 	
