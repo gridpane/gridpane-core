@@ -132,158 +132,15 @@ fi
 
 ProgressCurl=$(curl -d '{"percentage":"45", "detail":"All your base are belong to us...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
-wget -qO - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
-
-sleep 2
-
-wget -qO - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
-
 DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install software-properties-common libpcre3-dev make git build-essential curl fail2ban gcc ufw unattended-upgrades unzip whois linux-headers-generic libxslt-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev perl curl patch tar gzip zsh
 
 sleep 2
-
-sudo add-apt-repository -y "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main"
-
-sleep 2
-
-sudo add-apt-repository -y "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main"
 
 apt-get update
 
 sleep 5
 
-#monit stop nginx
-
-service nginx stop
-
 ProgressCurl=$(curl -d '{"percentage":"67", "detail":"PC LOAD LETTER...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
-
-sudo apt-get -y install openresty >> /opt/gridpane/resty.log
-
-sudo apt-get -y install openresty-resty openresty-opm >> /opt/gridpane/resty.log
-
-mv /usr/sbin/nginx /usr/sbin/nginx.old
-
-#monit stop nginx
-
-cp /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx
-
-mv /usr/local/openresty/nginx/conf /usr/local/openresty/nginx/conf.old
-
-ln -s /etc/nginx/ /usr/local/openresty/nginx/conf
-
-service nginx restart
-
-sleep 2
-
-sudo apt-get install -y luarocks
-
-export PATH=/usr/local/openresty/site/lualib:/usr/local/openresty/site:/usr/local/openresty/bin:/usr/local/openresty:$PATH
-
-service nginx stop 
-
-lsof -P | grep ':80' | awk '{print $2}' | xargs kill -9
-
-service nginx start
-
-sleep 3
-
-echo $PATH > /opt/gridpane/waf-build.path
-
-PREFIX=/usr/local/openresty
-ln -s $PREFIX/luajit/bin/lua      /usr/local/bin/lua-openresty
-ln -s $PREFIX/luajit/bin/luac     /usr/local/bin/luac-openresty
-ln -s $PREFIX/luajit/bin/luajit   /usr/local/bin/luajit-openresty
-ln -s $PREFIX/bin/luarocks        /usr/local/bin/luarocks-openresty
-ln -s $PREFIX/bin/resty           /usr/local/bin/resty
-ln -s $PREFIX/bin/restydoc        /usr/local/bin/restydoc
-ln -s $PREFIX/bin/restydoc-index  /usr/local/bin/restydoc-index
-ln -s $PREFIX/bin/openresty       /usr/local/bin/openresty
-ln -s $PREFIX/bin/opm             /usr/local/bin/opm
-ln -s $PREFIX/bin                 /usr/local/openresty/bin
-ln -s $PREFIX/site                /usr/local/openresty/site
-ln -s $PREFIX/luajit/bin/lua      /usr/local/openresty/lua-openresty
-ln -s $PREFIX/luajit/bin/luac     /usr/local/openresty/luac-openresty
-ln -s $PREFIX/luajit/bin/luajit   /usr/local/openresty/luajit-openresty
-ln -s $PREFIX/bin/luarocks        /usr/local/openresty/luarocks-openresty
-ln -s $PREFIX/bin/resty           /usr/local/openresty/resty
-ln -s $PREFIX/bin/restydoc        /usr/local/openresty/restydoc
-ln -s $PREFIX/bin/restydoc-index  /usr/local/openresty/restydoc-index
-ln -s $PREFIX/bin/openresty       /usr/local/openresty/openresty
-ln -s $PREFIX/bin/opm             /usr/local/openresty/opm
-ln -s $PREFIX/site/lualib         /usr/local/openresty/site/lualib
-
-mkdir -p /usr/local/src
-
-#cd /usr/local/src
-
-sudo luarocks install lua-resty-waf |& tee -a /opt/gridpane/waf-build.log
-
-if grep -q "lua-resty-waf 0.11.1-1 is now built and installed" "/opt/gridpane/waf-build.log"; then
-
-ProgressCurl=$(curl -d '{"percentage":"75", "detail":"Shaken, not stirred...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
-
-sed -i '/tcp_nodelay on;/a\			}' /etc/nginx/nginx.conf
-sed -i '/tcp_nodelay on;/a\			lua_resty_waf.init\(\)' /etc/nginx/nginx.conf
-sed -i '/tcp_nodelay on;/a\			local lua_resty_waf = require "resty.waf"' /etc/nginx/nginx.conf
-sed -i '/tcp_nodelay on;/a\			require "resty.core"' /etc/nginx/nginx.conf
-sed -i '/tcp_nodelay on;/a\			init_by_lua_block {' /etc/nginx/nginx.conf
-
-sed -i '/location \/ {/a\			}' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:write_log_events\(\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			local waf = lrw:new\(\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			local lrw = require "resty.waf"' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			log_by_lua_block {' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			}' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:exec\(\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("add_ruleset", "99000_scoring"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("add_ruleset", "90000_custom"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("add_ruleset", "42000_xss"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("add_ruleset", "41000_sqli"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("add_ruleset", "40000_generic_attack"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("add_ruleset", "35000_user_agent"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("add_ruleset", "21000_http_anomaly"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("add_ruleset", "20000_http_violation"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("add_ruleset", "11000_whitelist"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("mode", "ACTIVE"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			waf:set_option\("debug", true\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			local waf = lua_resty_waf:new\(\)' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			local lua_resty_waf = require "resty.waf"' /etc/nginx/common/wpfc.conf
-sed -i '/location \/ {/a\			access_by_lua_block {' /etc/nginx/common/wpfc.conf
-
-sed -i '/location ~ \\.php$ {/a\			}' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:write_log_events\(\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			local waf = lrw:new\(\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			local lrw = require "resty.waf"' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			log_by_lua_block {' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			}' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:exec\(\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("add_ruleset", "99000_scoring"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("add_ruleset", "90000_custom"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("add_ruleset", "42000_xss"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("add_ruleset", "41000_sqli"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("add_ruleset", "40000_generic_attack"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("add_ruleset", "35000_user_agent"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("add_ruleset", "21000_http_anomaly"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("add_ruleset", "20000_http_violation"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("add_ruleset", "11000_whitelist"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("mode", "ACTIVE"\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			waf:set_option\("debug", true\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			local waf = lua_resty_waf:new\(\)' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			local lua_resty_waf = require "resty.waf"' /etc/nginx/common/wpfc.conf
-sed -i '/location ~ \\.php$ {/a\			access_by_lua_block {' /etc/nginx/common/wpfc.conf
-
-touch /opt/gridpane/waf.active
-
-fi
-
-service nginx stop 
-
-lsof -P | grep ':80' | awk '{print $2}' | xargs kill -9
-
-service nginx restart
-
-ProgressCurl=$(curl -d '{"percentage":"77", "detail":"Calling all cars...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
 wget -qO /opt/gridpane/gpstage2.sh --timeout=15 https://www.dropbox.com/s/llcw4043bkt4gb0/gpstage2.sh
 
