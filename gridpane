@@ -74,6 +74,549 @@ fi
 
 sleep 5
 
+if [[ $GPURL == 'pvg.gridpane.com' ]]
+then
+
+apt-get update
+
+sleep 5
+
+apt-get install -y systemtap-sdt-dev libssl-dev libgd-dev libgd-dev libpam0g-dev
+
+sleep 5
+
+cd /opt
+
+git clone https://github.com/torden/ngx_cache_purge.git
+
+wget https://nginx.org/download/nginx-1.14.0.tar.gz
+
+tar -zxvf nginx-1.14.0.tar.gz
+
+mv nginx-1.14.0 nginx
+
+cd nginx
+
+service nginx stop
+
+echo "******************************************************************************************"
+echo "Configuring Nginx Build with Cache Purge.... Outputting to /opt/gridpane/plaid-build.log"
+echo "If you are watching in the terminal, it may go quiet, don't worry"
+echo "******************************************************************************************"
+
+echo "" >> /opt/gridpane/plaid-build.log
+echo "*****************************************************************************************" >> /opt/gridpane/plaid-build.log
+echo "Configuring Nginx Build with Cache Purge" >> /opt/gridpane/plaid-build.log
+echo "*****************************************************************************************" >> /opt/gridpane/plaid-build.log
+echo "" >> /opt/gridpane/plaid-build.log
+
+./configure --with-cc-opt='-g -O2 -fPIE -fstack-protector-strong -Wformat -Werror=format-security -fPIC -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now -fPIC' --prefix=/usr/share/nginx --http-log-path=/var/log/nginx/access.log --error-log-path=/var/log/nginx/error.log --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid --modules-path=/usr/lib/nginx/modules --http-client-body-temp-path=/var/lib/nginx/body --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --http-proxy-temp-path=/var/lib/nginx/proxy --http-scgi-temp-path=/var/lib/nginx/scgi --http-uwsgi-temp-path=/var/lib/nginx/uwsgi --with-debug --with-pcre-jit --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_v2_module --with-http_dav_module --with-http_slice_module --with-threads --with-http_addition_module --with-http_geoip_module=dynamic --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module=dynamic --with-http_sub_module --with-http_xslt_module=dynamic --with-stream=dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-mail=dynamic --with-mail_ssl_module --add-module=/opt/ngx_cache_purge
+
+echo "******************************************************************************************"
+echo "Building Nginx with Cache Purge makefile.... Outputting to /opt/gridpane/plaid-build.log"
+echo "If you are watching in the terminal, it may go quiet, don't worry"
+echo "******************************************************************************************"
+
+echo "" >> /opt/gridpane/plaid-build.log
+echo "*****************************************************************************************" >> /opt/gridpane/plaid-build.log
+echo "Building Nginx with Cache Purge makefile" >> /opt/gridpane/plaid-build.log
+echo "*****************************************************************************************" >> /opt/gridpane/plaid-build.log
+echo "" >> /opt/gridpane/plaid-build.log
+
+make
+
+echo "******************************************************************************************"
+echo "Installing Nginx with Cache Purge from makefile.... Outputting to /opt/gridpane/plaid-build.log"
+echo "If you are watching in the terminal, it may go quiet, don't worry"
+echo "******************************************************************************************"
+
+echo "" >> /opt/gridpane/plaid-build.log
+echo "*****************************************************************************************" >> /opt/gridpane/plaid-build.log
+echo "Installing Nginx with Cache Purge from makefile" >> /opt/gridpane/plaid-build.log
+echo "*****************************************************************************************" >> /opt/gridpane/plaid-build.log
+echo "" >> /opt/gridpane/plaid-build.log
+
+make install
+
+mv /usr/sbin/nginx /usr/sbin/nginx.old
+cp /usr/share/nginx/sbin/nginx /usr/sbin/nginx
+
+sudo cp -R /opt/plaid/templates/nginx/common /etc/nginx/common
+sudo cp -R /opt/plaid/templates/nginx/conf.d/* /etc/nginx/conf.d/
+sudo cat /opt/plaid/templates/nginx/nginx.conf > /etc/nginx/nginx.conf
+
+sudo sed -i '/REQUEST_SCHEME/c \fastcgi_param  SCRIPT_FILENAME        $request_filename;' /etc/nginx/fastcgi_params
+sudo sed -i '/REDIRECT_STATUS/a \fastcgi_param   HTTP_PROXY      "";' /etc/nginx/fastcgi_params
+
+mv /usr/share/nginx/conf /usr/share/nginx/conf.old
+ln -s /etc/nginx/ /usr/share/nginx/conf
+
+### Update wpfc - add fastcgi cache purge directives.
+cat > /etc/nginx/common/wpfc.conf << 'EOF'
+# WPFC NGINX CONFIGURATION
+# DO NOT MODIFY, ALL CHANGES LOST AFTER UPDATE PLAID
+# Limit access to avoid brute force attack
+# https://baraktawily.blogspot.com/2018/02/how-to-dos-29-of-world-wide-websites.html
+location /wp-admin {
+        location ~ /wp-admin/admin-ajax.php$ {
+                include fastcgi_params;
+                fastcgi_pass php;
+        }
+        location ~* /wp-admin/.*\.php$ {
+                limit_req zone=wp burst=6 nodelay;
+                include fastcgi_params;
+                fastcgi_pass php;
+        }
+}
+location = /wp-login.php {
+        limit_req zone=one burst=1 nodelay;
+        include fastcgi_params;
+        fastcgi_pass php;
+}
+set $skip_cache 0;
+# POST requests and URL with a query string should always go to php
+if ($request_method = POST) {
+        set $skip_cache 1;
+}
+if ($query_string != "") {
+        set $skip_cache 1;
+}
+# Don't cache URL containing the following segments
+if ($request_uri ~* "(/wp-admin/|/xmlrpc.php|wp-.*.php|index.php|/feed/|.*sitemap.*\.xml)") {
+        set $skip_cache 1;
+}
+# Don't use the cache for logged in users or recent commenter or customer with items in cart
+if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in|[a-z0-9]+_items_in_cart") {
+	set $skip_cache 1;
+}
+location ~ /purge(/.*) {
+    fastcgi_cache_purge WORDPRESS "$scheme$request_method$host$1";
+}
+location ~ /purgeall {
+    fastcgi_pass         php;
+    fastcgi_cache        WORDPRESS;
+    fastcgi_cache_purge  PURGE purge_all from 127.0.0.1;
+}
+# Use cached or actual file if they exists, Otherwise pass request to WordPress
+location / {
+        try_files $uri $uri/ /index.php?$args;
+}
+location ~ \.php$ {
+        try_files $uri =404;
+        include fastcgi_params;
+        fastcgi_pass php;
+        fastcgi_cache_bypass $skip_cache;
+        fastcgi_no_cache $skip_cache;
+        fastcgi_cache WORDPRESS;
+}
+EOF
+rm /opt/nginx-1.14.0.tar.gz
+rm -rf /opt/nginx
+rm -rf /ngx_cache_purge
+service nginx restart
+### Update wpfc - add fastcgi cache purge directives.
+cat > /etc/nginx/common/wpfc.conf << 'EOF'
+# WPFC NGINX CONFIGURATION
+# DO NOT MODIFY, ALL CHANGES LOST AFTER UPDATE PLAID
+# Limit access to avoid brute force attack
+# https://baraktawily.blogspot.com/2018/02/how-to-dos-29-of-world-wide-websites.html
+location /wp-admin {
+        location ~ /wp-admin/admin-ajax.php$ {
+                include fastcgi_params;
+                fastcgi_pass php;
+        }
+        location ~* /wp-admin/.*\.php$ {
+                limit_req zone=wp burst=6 nodelay;
+                include fastcgi_params;
+                fastcgi_pass php;
+        }
+}
+location = /wp-login.php {
+        limit_req zone=one burst=1 nodelay;
+        include fastcgi_params;
+        fastcgi_pass php;
+}
+set $skip_cache 0;
+# POST requests and URL with a query string should always go to php
+if ($request_method = POST) {
+        set $skip_cache 1;
+}
+if ($query_string != "") {
+        set $skip_cache 1;
+}
+# Don't cache URL containing the following segments
+if ($request_uri ~* "(/wp-admin/|/xmlrpc.php|wp-.*.php|index.php|/feed/|.*sitemap.*\.xml)") {
+        set $skip_cache 1;
+}
+# Don't use the cache for logged in users or recent commenter or customer with items in cart
+if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in|[a-z0-9]+_items_in_cart") {
+	set $skip_cache 1;
+}
+location ~ /purge(/.*) {
+    fastcgi_cache_purge WORDPRESS "$scheme$request_method$host$1";
+}
+location ~ /purgeall {
+    fastcgi_pass         php;
+    fastcgi_cache        WORDPRESS;
+    fastcgi_cache_purge  PURGE purge_all from 127.0.0.1;
+}
+# Use cached or actual file if they exists, Otherwise pass request to WordPress
+location / {
+        try_files $uri $uri/ /index.php?$args;
+}
+location ~ \.php$ {
+        try_files $uri =404;
+        include fastcgi_params;
+        fastcgi_pass php;
+        fastcgi_cache_bypass $skip_cache;
+        fastcgi_no_cache $skip_cache;
+        fastcgi_cache WORDPRESS;
+}
+EOF
+
+systemctl start nginx
+
+touch ~/purge_compile
+
+rm -rf /opt/ngx_cache_purge
+rm -rf /opt/nginx
+rm /opt/nginx-1.14.0.tar.gz
+
+function GridPaneNginxCachePurger() {
+
+if [ ! -d /opt/gridpane/plugins/gridpane-nginx-cache-purger ]; then
+    mkdir -p /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/views
+    mkdir -p /opt/gridpane/plugins/gridpane-nginx-cache-purger/purge-logs
+    mkdir -p /opt/gridpane/plugins/gridpane-nginx-cache-purger/assets/js
+fi
+
+indexcontent='<?php // Silence is golden'
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/index.php ]; then
+	touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/index.php;
+    echo $indexcontent > /opt/gridpane/plugins/gridpane-nginx-cache-purger/index.php
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/assets/index.php ]; then
+	touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/assets/index.php;
+    echo $indexcontent > /opt/gridpane/plugins/gridpane-nginx-cache-purger/assets/index.php
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/assets/js/index.php ]; then
+	touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/assets/js/index.php;
+    echo $indexcontent > /opt/gridpane/plugins/gridpane-nginx-cache-purger/assets/js/index.php
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/purge-logs/index.php ]; then
+	touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/purge-logs/index.php
+    echo $indexcontent > /opt/gridpane/plugins/gridpane-nginx-cache-purger/purge-logs/index.php
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/index.php ]; then
+	touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/index.php;
+    echo $indexcontent > /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/index.php
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/views/index.php ]; then
+	touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/views/index.php;
+    echo $indexcontent > /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/views/index.php
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/gridpane-nginx-cache-purger.php ];
+then
+    touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/gridpane-nginx-cache-purger.php
+    cat > /opt/gridpane/plugins/gridpane-nginx-cache-purger/gridpane-nginx-cache-purger.php << 'EOF'
+<?php
+/**
+ * GridPane Nginx Cache Purger
+ *
+ * @package         LearningCurve\GridPaneNginxCachePurger
+ * @since           1.0.0
+ * @author          Jeff Cleverley
+ * @license         GNU-2.0+
+ *
+ * @wordpress-plugin
+ * Plugin Name:     GridPane Nginx Cache Purger
+ * Description:     Plugin to initiate the FastCGI Cache Purge on the GridPane OpenResty Nginx Stack
+ * Version:         1.0.0
+ * Author:          Jeff Cleverley
+ * Author URI:      https://github.com/JeffCleverley/GridPaneCachePurger
+ * License:         GPL-2.0+
+ * License URI:     http://www.gnu.org/licenses/gpl-2.0.txt
+ * Text Domain:     gridpane-nginx-cache-purger
+ * Domain Path:     /languages
+ */
+if ( ! defined( 'ABSPATH' ) ) {
+	exit( 'Hello, Hello, Hello, what\'s going on here then?' );
+}
+define( 'GPCP_VERSION', '1.0.0' );
+define( 'GPCP_TEXT_DOMAIN', 'gridpane-nginx-cache-purger' );
+define( 'GPCP_DIR_URL', plugin_dir_url( __FILE__ ) );
+define( 'GPCP_DIR_PATH', plugin_dir_path( __FILE__ ) );
+function activate_plugin_name() {
+	require_once GPCP_DIR_PATH . 'src/class-gpcp-activator.php';
+	GridPane_Cache_Purger_Plugin_Activator::activate();
+}
+function deactivate_plugin_name() {
+	require_once GPCP_DIR_PATH . 'src/class-gpcp-deactivator.php';
+	GridPane_Cache_Purger_Plugin_Deactivator::deactivate();
+}
+register_activation_hook( __FILE__, 'activate_plugin_name' );
+register_deactivation_hook( __FILE__, 'deactivate_plugin_name' );
+function autoload_files() {
+	$files = array(
+		'class-gpcp.php',
+	);
+	foreach ( $files as $file ) {
+		require GPCP_DIR_PATH . '/src/' . $file;
+	}
+}
+function launch() {
+	autoload_files();
+}
+launch();
+EOF
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp.php ];
+then
+	touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp.php
+    cat > /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp.php << 'EOF'
+<?php
+class Nginx_Cache_Purger {
+	protected $plugin_name;
+	protected $version;
+	public $plugin_textdomain;
+	public $plugin_dir_path;
+	public function __construct( $plugin_version, $plugin_dir_path, $plugin_dir_url, $plugin_name ) {
+		$this->plugin_version    = $plugin_version;
+		$this->plugin_dir_path   = $plugin_dir_path;
+		$this->plugin_dir_url    = $plugin_dir_url;
+		$this->plugin_name       = $plugin_name;
+		$this->plugin_textdomain = $plugin_name;
+	}
+	public function init() {
+		add_action( 'init', array( $this, 'instantiate' ) );
+	}
+	public function instantiate() {
+		if ( is_admin() ) {
+			require_once( $this->plugin_dir_path . 'src/class-gpcp-admin.php' );
+			$this->admin = new Nginx_Cache_Purger_Admin;
+			$this->admin->init();
+		}
+	}
+}
+function Nginx_Cache_Purger() {
+	static $object;
+	if ( null == $object ) {
+		$object = new Nginx_Cache_Purger(
+			GPCP_VERSION,
+			GPCP_DIR_PATH,
+			GPCP_DIR_URL,
+			GPCP_TEXT_DOMAIN
+		);
+	}
+	return $object;
+}
+add_action( 'plugins_loaded', array( Nginx_Cache_Purger(), 'init' ) );
+EOF
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp-admin.php ];
+then
+    touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp-admin.php;
+    cat > /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp-admin.php << 'EOF'
+<?php
+class Nginx_Cache_Purger_Admin {
+	public $plugin_version;
+	public $plugin_textdomain;
+	public $plugin_dir_path;
+	public $plugin_dir_url;
+	public function __construct() {
+		$this->plugin_version    = Nginx_Cache_Purger()->plugin_version;
+		$this->plugin_textdomain = Nginx_Cache_Purger()->plugin_textdomain;
+		$this->plugin_dir_path   = Nginx_Cache_Purger()->plugin_dir_path;
+		$this->plugin_dir_url    = Nginx_Cache_Purger()->plugin_dir_url;
+	}
+	public function init() {
+		add_action( 'admin_menu', array( $this, 'admin_menu' ), 150 );
+		add_action( "wp_ajax_register_purge", array( $this, "register_purge" ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'purge_scripts' ) );
+	}
+	public function admin_menu() {
+		global $gpcp;
+		$gpcp = add_options_page(
+			__( 'GridPane Nginx Cache Purger', $this->plugin_textdomain ),
+			__( 'GridPane Nginx Cache Purger', $this->plugin_textdomain ),
+			'manage_options',
+			$this->plugin_textdomain,
+			array(
+				$this,
+				'display_nginx_cache_purger_settings_screen'
+			)
+		);
+	}
+	public function display_nginx_cache_purger_settings_screen() {
+		require __DIR__ . "/views/admin-screen.php";
+	}
+	public function purge_scripts( $hook ) {
+		global $gpcp;
+		if ( $hook != $gpcp ) {
+			return;
+		}
+		wp_enqueue_script( 'purge-form.js', $this->plugin_dir_url . 'assets/js/purge-form.js', array( 'jquery' ) );
+	}
+	public function register_purge() {
+		$site = get_site_url();
+		$find = [ 'http://', 'https://' ];
+		$replace = '';
+		$host = str_replace( $find, $replace, $site);
+		if ( is_ssl() ) {
+			$purgeurl = $site . '/purgeall' ;
+			$curl = curl_init( $purgeurl );
+			curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PURGE" );
+			curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($curl, CURLOPT_RESOLVE, array( $host . ":443:127.0.0.1" ));
+			$response = curl_exec($curl);
+			if ($response === false) {
+				$response = curl_errno($curl) .': '. curl_error($curl);
+			}
+			curl_close($curl);
+		} else {
+			$curl = curl_init( "http://127.0.0.1/purgeall" );
+			curl_setopt($curl, CURLOPT_HTTPHEADER, array( 'Host:' . $host ));
+			curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PURGE" );
+			curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
+			$response = curl_exec($curl);
+			curl_close($curl);
+		}
+		$nginx_cache_purge_log = GPCP_DIR_PATH . '/purge-logs/nginx-cache-purge.log';
+		file_put_contents( $nginx_cache_purge_log, $response );
+		exit;
+	}
+}
+EOF
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/views/admin-screen.php ];
+then
+    touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/views/admin-screen.php
+    cat > /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/views/admin-screen.php << 'EOF'
+<div class="wrap">
+	<h2>
+		<?php _e( 'GridPane Nginx Cache Purger', $this->plugin_textdomain ); ?>
+		<span style="float: right; font-size: 10px; color: #888;">
+        <?php
+        _e( 'Version ', $this->plugin_textdomain );
+        echo esc_attr( '0.1' );
+        ?>
+	</span>
+	</h2>
+    <div class="wrap">
+        <p>The Nginx Helper plugin can not purge all nginx cache. Use this plugin instead when you want to Purge the entire cache for this site.</p>
+        <form id="purge" style="margin: 20px 0; height: 30px" method="POST">
+            <input type="submit" id="purge" class="button-primary" name="purge" value="PURGE"/>
+        </form>
+    </div>
+</div>
+EOF
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp-activator.php ];
+then
+    touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp-activator.php
+    cat > /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp-activator.php << 'EOF'
+<?php
+class GridPane_Cache_Purger_Plugin_Activator {
+	public static function activate() {
+		$nginx_cache_purge_log = GPCP_DIR_PATH . '/purge-logs/nginx-cache-purge.log';
+		fopen( $nginx_cache_purge_log, 'w+' );
+	}
+}
+EOF
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp-deactivator.php ];
+then
+    touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp-deactivator.php
+    cat > /opt/gridpane/plugins/gridpane-nginx-cache-purger/src/class-gpcp-deactivator.php << 'EOF'
+<?php
+class GridPane_Cache_Purger_Plugin_Deactivator {
+	public static function deactivate() {
+		$nginx_cache_purge_log = GPCP_DIR_PATH . '/purge-logs/nginx-cache-purge.log';
+		unlink( $nginx_cache_purge_log );
+	}
+}
+EOF
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/purge-logs/nginx-cache-purge.log ];
+then
+    touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/purge-logs/nginx-cache-purge.log
+    echo "" > /opt/gridpane/plugins/gridpane-nginx-cache-purger/purge-logs/nginx-cache-purge.log
+fi
+
+if [ ! -f /opt/gridpane/plugins/gridpane-nginx-cache-purger/assets/js/purge-form.js ];
+then
+    touch /opt/gridpane/plugins/gridpane-nginx-cache-purger/assets/js/purge-form.js
+    cat > /opt/gridpane/plugins/gridpane-nginx-cache-purger/assets/js/purge-form.js << 'EOF'
+jQuery(document).ready(function($) {
+  $('#purge').submit(function() {
+    var data = {
+      action: 'register_purge',
+      value: 'purge now'
+    }
+    jQuery.post(ajaxurl, data, function () {
+      alert('FastCGI Cache Purge All Initiated');
+    })
+    return false;
+  });
+});
+EOF
+fi
+
+if [ ! -f /opt/gridpane/plugins/mu-gridpane-nginx-cache-purger.php ];
+then
+    touch /opt/gridpane/plugins/mu-gridpane-nginx-cache-purger.php
+    cat > /opt/gridpane/plugins/mu-gridpane-nginx-cache-purger.php << 'EOF'
+<?php
+/**
+ * GridPane Nginx Cache Purger
+ *
+ * @package         LearningCurve\GridPaneNginxCachePurger
+ * @since           1.0.0
+ * @author          Jeff Cleverley
+ * @license         GNU-2.0+
+ *
+ * @wordpress-plugin
+ * Plugin Name:     GridPane Nginx Cache Purger
+ * Description:     Plugin to initiate the FastCGI Cache Purge on the GridPane OpenResty Nginx Stack
+ * Version:         1.0.0
+ * Author:          Jeff Cleverley
+ * Author URI:      https://github.com/JeffCleverley/GridPaneCachePurger
+ * License:         GPL-2.0+
+ * License URI:     http://www.gnu.org/licenses/gpl-2.0.txt
+ * Text Domain:     gridpane-nginx-cache-purger
+ * Domain Path:     /languages
+ */
+require __DIR__ . '/gridpane-nginx-cache-purger/gridpane-nginx-cache-purger.php';
+EOF
+fi
+}
+
+echo "***********************************************************************"
+echo "Building gridpane-nginx-cache-purger plugin in /opt/gridpane/plugins"
+echo "***********************************************************************"
+
+GridPaneNginxCachePurger
+
+echo "***********************************************************************"
+echo "Nginx Purge Build complete"
+echo "***********************************************************************"
+
+fi
+
 echo "**** Checking MYSQL Install... ****** " |& tee -a /opt/gridpane/logs/plaid-build.log 
 
 mysql -V |& tee -a /opt/gridpane/logs/plaid-build.log 
