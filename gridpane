@@ -83,7 +83,7 @@ sleep 5
 
 systemctl stop nginx
 
-ProgressCurl=$(curl -d '{"percentage":"15", "detail":"Preparing to Plaid...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+ProgressCurl=$(curl -d '{"percentage":"48", "detail":"Preparing to Plaid...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -99,35 +99,35 @@ echo "Extract Nginx ************************************************************
 
 tar -zxvf nginx.tar.gz
 
-chown -R root:root /opt/go-gridpane/nginx
+chown -R root:root /opt/go-gridpane/nginx-1.14.0
 
-chmod 775 /opt/go-gridpane/nginx/configure
+chmod 775 /opt/go-gridpane/nginx-1.14.0/configure
 
-cd /opt/go-gridpane/nginx
+cd /opt/go-gridpane/nginx-1.14.0
 
-ProgressCurl=$(curl -d '{"percentage":"18", "detail":"Configuring Plaid build...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+ProgressCurl=$(curl -d '{"percentage":"50", "detail":"Configuring Plaid build...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
 echo "Configuring Plaid Nginx Build *****************************************************************************************" >> /opt/gridpane/plaid-build.log
 
 ./configure --with-cc-opt='-g -O2 -fPIE -fstack-protector-strong -Wformat -Werror=format-security -fPIC -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now -fPIC' --prefix=/usr/share/nginx --http-log-path=/var/log/nginx/access.log --error-log-path=/var/log/nginx/error.log --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid --modules-path=/usr/lib/nginx/modules --http-client-body-temp-path=/var/lib/nginx/body --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --http-proxy-temp-path=/var/lib/nginx/proxy --http-scgi-temp-path=/var/lib/nginx/scgi --http-uwsgi-temp-path=/var/lib/nginx/uwsgi --with-debug --with-pcre-jit --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_v2_module --with-http_dav_module --with-http_slice_module --with-threads --with-http_addition_module --with-http_geoip_module=dynamic --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module=dynamic --with-http_sub_module --with-http_xslt_module=dynamic --with-stream=dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-mail=dynamic --with-mail_ssl_module --add-module=/opt/ngx_cache_purge >> /opt/gridpane/plaid-build.log
 
-ProgressCurl=$(curl -d '{"percentage":"22", "detail":"Building some Plaid takes a little time...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+ProgressCurl=$(curl -d '{"percentage":"55", "detail":"Building some Plaid takes a little time...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
 echo "Building Plaid Nginx Makefile *****************************************************************************************" >> /opt/gridpane/resty.log
 
 sleep 3
 
-cd /opt/go-gridpane/nginx
+cd /opt/go-gridpane/nginx-1.14.0
 
 make >> /opt/gridpane/plaid-build.log
 
-ProgressCurl=$(curl -d '{"percentage":"26", "detail":"Here we go...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+ProgressCurl=$(curl -d '{"percentage":"60", "detail":"Here we go...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
 echo "Installing Plaid Nginx from Makefile ************************************************************************************" >> /opt/gridpane/plaid-build.log
 
 sleep 3
 
-cd /opt/go-gridpane/nginx
+cd /opt/go-gridpane/nginx-1.14.0
 
 make install >> /opt/gridpane/plaid-build.log
 
@@ -144,10 +144,9 @@ sudo sed -i '/REDIRECT_STATUS/a \fastcgi_param   HTTP_PROXY      "";' /etc/nginx
 mv /usr/share/nginx/conf /usr/share/nginx/conf.old
 ln -s /etc/nginx/ /usr/share/nginx/conf
 
-ProgressCurl=$(curl -d '{"percentage":"30", "detail":"Taming the Purge...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+ProgressCurl=$(curl -d '{"percentage":"61", "detail":"Taming the Purge...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
-echo "Updating Plaid Nginx FastCGI configurations for Purge *****************************************************************************************" >> /opt/gridpane/resty.log
-
+echo "Updating Plaid Nginx FastCGI configurations for Purge *****************************************************************************************" >> /opt/gridpane/plaid-build.log
 
 ### Update wpfc - add fastcgi cache purge directives.
 cat > /etc/nginx/common/wpfc.conf << 'EOF'
@@ -271,11 +270,7 @@ EOF
 
 systemctl start nginx
 
-touch ~/purge_compile
-
-rm -rf /opt/ngx_cache_purge
-rm -rf /opt/nginx
-rm /opt/nginx-1.14.0.tar.gz
+echo "Building Cache Purger Plugin configurations for Purge *****************************************************************************************" >> /opt/gridpane/plaid-build.log
 
 function GridPaneNginxCachePurger() {
 
@@ -600,17 +595,12 @@ EOF
 fi
 }
 
-echo "***********************************************************************"
-echo "Building gridpane-nginx-cache-purger plugin in /opt/gridpane/plugins"
-echo "***********************************************************************"
-
 GridPaneNginxCachePurger
 
-echo "***********************************************************************"
-echo "Nginx Purge Build complete"
-echo "***********************************************************************"
-
 fi
+
+ProgressCurl=$(curl -d '{"percentage":"63", "detail":"Plaid fortified...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+
 
 echo "**** Checking MYSQL Install... ****** " |& tee -a /opt/gridpane/logs/plaid-build.log 
 
@@ -668,7 +658,7 @@ then
 	
 fi
 
-ProgressCurl=$(curl -d '{"percentage":"45", "detail":"All your base are belong to us...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
+ProgressCurl=$(curl -d '{"percentage":"65", "detail":"All your base are belong to us...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
 DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install software-properties-common libpcre3-dev make git build-essential curl fail2ban gcc ufw unattended-upgrades unzip whois linux-headers-generic libxslt-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev perl curl patch tar gzip zsh
 
