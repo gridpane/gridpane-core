@@ -87,7 +87,7 @@ ProgressCurl=$(curl -d '{"percentage":"48", "detail":"Preparing to Plaid...", "s
 
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get install -y systemtap-sdt-dev libssl-dev libgd-dev libgd-dev libpam0g-dev gcc libpcre3 libpcre3-dev libpng-dev zlib1g-dev >> /opt/gridpane/plaid-build.log
+apt-get install -y systemtap-sdt-dev libssl-dev libgd-dev libgd-dev libpam0g-dev gcc libpcre3 libpcre3-dev libpng-dev zlib1g-dev apt-get install libxml2-dev libxslt1-dev >> /opt/gridpane/plaid-build.log
 
 sleep 5
 
