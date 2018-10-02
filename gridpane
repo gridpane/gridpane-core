@@ -74,6 +74,9 @@ fi
 
 sleep 5
 
+DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install software-properties-common libpcre3-dev make git build-essential curl fail2ban gcc ufw unattended-upgrades unzip whois linux-headers-generic libxslt-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev perl curl patch tar gzip zsh
+
+
 if [[ $GPURL == 'pvg.gridpane.com' ]]
 then
 
@@ -87,7 +90,7 @@ ProgressCurl=$(curl -d '{"percentage":"48", "detail":"Preparing to Plaid...", "s
 
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get install -y systemtap-sdt-dev libssl-dev libgd-dev libgd-dev libpam0g-dev gcc libpcre3 libpcre3-dev libpng-dev zlib1g-dev libxml2-dev libxslt1-dev >> /opt/gridpane/plaid-build.log
+apt-get install -y systemtap-sdt-dev libssl-dev libgd-dev libpam0g-dev gcc libpcre3 libpng-dev libxml2-dev libxslt1-dev >> /opt/gridpane/plaid-build.log
 
 sleep 5
 
@@ -659,8 +662,6 @@ then
 fi
 
 ProgressCurl=$(curl -d '{"percentage":"65", "detail":"All your base are belong to us...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
-
-DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install software-properties-common libpcre3-dev make git build-essential curl fail2ban gcc ufw unattended-upgrades unzip whois linux-headers-generic libxslt-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev perl curl patch tar gzip zsh
 
 sleep 2
 
