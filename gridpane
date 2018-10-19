@@ -615,6 +615,7 @@ function GridPaneMailer() {
     then
         touch /opt/gridpane/plugins/gridpane-mailer/gridpane-mailer.php
         cat > /opt/gridpane/plugins/gridpane-mailer/gridpane-mailer.php << 'EOF'
+<?php
 /**
  * All this is Chad Butler, I just put it into a MU format to fit GridPane stack
  *                                                                          - Jeff Cleverley
