@@ -598,7 +598,73 @@ EOF
 fi
 }
 
-GridPaneNginxCachePurger
+function GridPaneMailer() {
+
+    if [ ! -d /opt/gridpane/plugins/gridpane-mailer ]; then
+        mkdir -p /opt/gridpane/plugins/gridpane-mailer
+    fi
+
+    indexcontent='<?php // Silence is golden'
+
+    if [ ! -f /opt/gridpane/plugins/gridpane-mailer/index.php ]; then
+        touch /opt/gridpane/plugins/gridpane-mailer/index.php;
+        echo $indexcontent > /opt/gridpane/plugins/gridpane-mailer/index.php
+    fi
+
+    if [ ! -f /opt/gridpane/plugins/gridpane-mailer/gridpane-mailer.php ];
+    then
+        touch /opt/gridpane/plugins/gridpane-mailer/gridpane-mailer.php
+        cat > /opt/gridpane/plugins/gridpane-mailer/gridpane-mailer.php << 'EOF'
+/**
+ * All this is Chad Butler, I just put it into a MU format to fit GridPane stack
+ *                                                                          - Jeff Cleverley
+ */
+add_action( 'phpmailer_init', 'use_smtp_email' );
+function use_smtp_email( $phpmailer ) {
+	$phpmailer->isSMTP();
+	$phpmailer->Host       = SMTP_HOST;
+	$phpmailer->SMTPAuth   = SMTP_AUTH;
+	$phpmailer->Port       = SMTP_PORT;
+	$phpmailer->Username   = SMTP_USER;
+	$phpmailer->Password   = SMTP_PASS;
+	$phpmailer->SMTPSecure = SMTP_SECURE;
+	$phpmailer->From       = SMTP_FROM;
+	$phpmailer->FromName   = SMTP_NAME;
+}
+EOF
+    fi
+
+    if [ ! -f /opt/gridpane/plugins/mu-gridpane-mailer.php ];
+    then
+        touch /opt/gridpane/plugins/mu-gridpane-mailer.php
+        cat > /opt/gridpane/plugins/mu-gridpane-mailer.php << 'EOF'
+<?php
+/**
+* GridPane Mailer
+*
+* @wordpress-plugin
+* Plugin Name:      GridPane Mailer
+* Description:      Plugin to use SMTP mail services instead of wp_mail
+* Version:          1.0.0
+* Author:           Chad Butler, Jeff Cleverley
+* License:          GPL-2.0+
+* License URI:      http://www.gnu.org/licenses/gpl-2.0.txt
+* Text Domain:      gridpane-mailer
+*/
+
+require __DIR__ . '/gridpane-mailer/gridpane-mailer.php';
+EOF
+    fi
+
+}
+
+function buildGridPanePlugins() {
+
+    GridPaneNginxCachePurger
+    GridPaneMailer
+}
+
+buildGridPanePlugins
 
 fi
 
