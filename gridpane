@@ -738,17 +738,21 @@ sleep 5
 
 ProgressCurl=$(curl -d '{"percentage":"67", "detail":"PC LOAD LETTER...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
-if [[ $GPURL == 'pvg.gridpane.com' ]]
-then
-    # Black mirror dropbox of scripts
-    wget -qO /opt/gridpane/gpstage2.sh --timeout=15 https://www.dropbox.com/s/rh0qzm3so7j7dzg/gpstage2.sh
-    chmod +x /opt/gridpane/gpstage2.sh
-    mv /opt/gridpane/gpstage2.sh /usr/local/bin/gpstage2
-else
-    wget -qO /opt/gridpane/gpstage2.sh --timeout=15 https://www.dropbox.com/s/llcw4043bkt4gb0/gpstage2.sh
-    chmod +x /opt/gridpane/gpstage2.sh
-    mv /opt/gridpane/gpstage2.sh /usr/local/bin/gpstage2
-fi
+#if [[ $GPURL == 'pvg.gridpane.com' ]]
+#then
+#    # Black mirror dropbox of scripts
+#    wget -qO /opt/gridpane/gpstage2.sh --timeout=15 https://www.dropbox.com/s/rh0qzm3so7j7dzg/gpstage2.sh
+#    chmod +x /opt/gridpane/gpstage2.sh
+#    mv /opt/gridpane/gpstage2.sh /usr/local/bin/gpstage2
+#else
+#    wget -qO /opt/gridpane/gpstage2.sh --timeout=15 https://www.dropbox.com/s/llcw4043bkt4gb0/gpstage2.sh
+#    chmod +x /opt/gridpane/gpstage2.sh
+#    mv /opt/gridpane/gpstage2.sh /usr/local/bin/gpstage2
+#fi
+
+wget -qO /opt/gridpane/gpstage2.sh --timeout=15 https://www.dropbox.com/s/llcw4043bkt4gb0/gpstage2.sh
+chmod +x /opt/gridpane/gpstage2.sh
+mv /opt/gridpane/gpstage2.sh /usr/local/bin/gpstage2
 
 mainend=$(date +%s)
 totalruntime=$((mainend-mainstart))
