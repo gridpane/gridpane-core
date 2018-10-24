@@ -77,7 +77,7 @@ sleep 5
 DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install software-properties-common libpcre3-dev make git build-essential curl fail2ban gcc ufw unattended-upgrades unzip whois linux-headers-generic libxslt-dev libgeoip-dev zlib1g-dev libreadline-dev libncurses5-dev perl curl patch tar gzip zsh
 
 
-if [[ $GPURL == 'pvg.gridpane.com' ]]
+if [[ $GPURL == 'pvg.gridpane.com' ]] || [[ $GPURL == 'dev.gridpane.com' ]]
 then
 
 apt-get update >> /opt/gridpane/plaid-build.log
