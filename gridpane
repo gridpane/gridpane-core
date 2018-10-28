@@ -84,9 +84,14 @@ systemctl stop nginx
 
 ProgressCurl=$(curl -d '{"percentage":"48", "detail":"Preparing to Plaid...", "server_ip":"'$serverIP'"}' -H "Content-Type: application/json" -X POST https://$GPURL/api/build-progress?api_token=$gridpanetoken 2>&1)
 
+# Repo for Jo the bash json massaging app
+apt-add-repository ppa:duggan/jo --yes
+
+apt-get update -q
+
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get install -y systemtap-sdt-dev libssl-dev libgd-dev libpam0g-dev gcc libpcre3 libpng-dev libxml2-dev libxslt1-dev >> /opt/gridpane/plaid-build.log
+apt-get install -y systemtap-sdt-dev libssl-dev libgd-dev libpam0g-dev gcc libpcre3 libpng-dev libxml2-dev libxslt1-dev jo >> /opt/gridpane/plaid-build.log
 
 sleep 5
 
